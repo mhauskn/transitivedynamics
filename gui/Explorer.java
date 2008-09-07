@@ -6,6 +6,9 @@ import java.io.IOException;
 
 import javax.swing.JMenuBar;
 import util.util;
+import java.util.ArrayList;
+
+import plotter.Graph3d;
 
 public class Explorer {	
 	/**
@@ -24,6 +27,22 @@ public class Explorer {
 	 * Write to logfile if true
 	 */
 	boolean export;
+	
+	/**
+	 * Visualize Explore if true
+	 */
+	boolean visualize;
+	
+	/**
+	 * Contains the data given to the visualizer
+	 */
+	ArrayList<int[]> visData = new ArrayList<int[]>();
+	
+	/**
+	 * Integers to indicate the max and min values
+	 * for each of our axies
+	 */
+	int xMin, xMax, yMin, yMax, zMin, zMax;
 	
 	/**
 	 * Filename to export to
@@ -168,7 +187,8 @@ public class Explorer {
 //---------------------------------------------------------------------------------------
 //	PUBLIC METHODS
 	
-	public Explorer (ContainerPanel cp, ExploreWindow expWin, JMenuBar JMenu)
+	public Explorer (ContainerPanel cp, ExploreWindow expWin, 
+			JMenuBar JMenu)
 	{
 		cPanel = cp;
 		exp = expWin;
@@ -177,6 +197,9 @@ public class Explorer {
 		panels = cp.panels;
 		constrain = cp.constrain;
 		conclusion = cp.conclusion;
+		
+		export = expWin.getExportExplore();
+		visualize = expWin.getVisualizeExplore();
 	}
 	
 
@@ -273,6 +296,9 @@ public class Explorer {
 		
 		if (export) 
 			output.close();
+		
+		if (visualize)
+			visualize();
 	}
 	
 //---------------------------------------------------------------------------------------
@@ -501,6 +527,29 @@ public class Explorer {
 			if (accepted) output.write("Y\n");
 			else output.write("N\n");
 		}
+		
+		if (visualize) {
+			if (attempts == 0) { // Our first time through
+				xMin = xMax = panels[0].iA;
+				xMin = yMax = panels[0].iB;
+				zMin = zMax = panels[1].iB;
+			} else { // Check for new max min vals
+				if (panels[0].iA < xMin) xMin = panels[0].iA;
+				if (panels[0].iA > xMax) xMax = panels[0].iA;
+				if (panels[0].iB < yMin) yMin = panels[0].iB;
+				if (panels[0].iB > yMax) yMax = panels[0].iB;
+				if (panels[1].iB < zMin) zMin = panels[1].iB;
+				if (panels[1].iB > zMax) zMax = panels[1].iB;
+			}
+			
+			if (accepted) {
+				int[] tuple = new int[3];
+				tuple[0] = panels[0].iA;
+				tuple[1] = panels[0].iB;
+				tuple[2] = panels[1].iB;
+				visData.add(tuple);
+			}
+		}
 	}
 	
 	/**
@@ -516,5 +565,25 @@ public class Explorer {
 		}
 		cPanel.update();
 		menu.setEnabled(true);
+	}
+	
+	/**
+	 * Creates a new graph3d object to visualize the
+	 * explore results
+	 */
+	private void visualize ()
+	{
+		Graph3d g = new Graph3d();
+		g.setXAxisName(panels[0].aWord);
+		g.setYAxisName(panels[0].bWord);
+		g.setZAxisName(panels[1].bWord);
+		
+		g.setXMinMax(xMin, xMax);
+		g.setYMinMax(yMin, yMax);
+		g.setZMinMax(zMin, zMax);
+		
+		g.setPoints(visData);
+
+		g.graph();
 	}
 }

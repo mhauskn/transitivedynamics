@@ -27,6 +27,7 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	public static final String SIMULATE_STRING			= "simulate";
 	public static final String CLEAR_STRING				= "clear";
 	public static final String EXPORT_STRING			= "export";
+	public static final String VISUALIZE_STRING			= "visualize";
 
 	/**
 	 * The actual explore window
@@ -47,6 +48,11 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	 * Checkbox to toggle exporting to CSV file
 	 */
 	protected static JCheckBox export;
+	
+	/**
+	 * Checkbox to visualize explore
+	 */
+	protected static JCheckBox visualize;
 	
 	/**
 	 * The main Container Panel holding the panels
@@ -73,6 +79,11 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	 * True if we want to export the explore to a file
 	 */
 	private boolean exportExplore = false;
+	
+	/**
+	 * True if we want to export the explore to a file
+	 */
+	private boolean visualizeExplore = false;
 	
 	/**
 	 * The file to export the explore to
@@ -199,11 +210,30 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	    // Toggle export requested
 	    } else if(EXPORT_STRING.equals(e.getActionCommand())) {
 	    	exportExplore = !exportExplore;
+	    
+	    } else if(VISUALIZE_STRING.equals(e.getActionCommand())) {
+	    	visualizeExplore = !visualizeExplore;
 	    	
 	    // Clear requested
 	    } else if(CLEAR_STRING.equals(e.getActionCommand())){
 	    	txtBox.setText("");
 	    }
+	}
+	
+	/**
+	 * If true we desire to export the explore
+	 */
+	public boolean getExportExplore ()
+	{
+		return exportExplore; 
+	}
+	
+	/**
+	 * If true we desire to visualize the explore
+	 */
+	public boolean getVisualizeExplore()
+	{
+		return visualizeExplore;
 	}
 	
 	
@@ -233,6 +263,7 @@ public class ExploreWindow extends JFrame implements ActionListener {
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.add(radioButtons, BorderLayout.WEST);
         bottom.add(export, BorderLayout.EAST);
+        bottom.add(visualize, BorderLayout.WEST);
         
         pane.add(buttons, BorderLayout.NORTH);
         pane.add(areaScrollPane, BorderLayout.CENTER);
@@ -271,6 +302,12 @@ public class ExploreWindow extends JFrame implements ActionListener {
         export.setSelected(false);
         
         export.addActionListener(this);
+        
+        visualize = new JCheckBox("Visualize Explore");
+        visualize.setActionCommand(VISUALIZE_STRING);
+        visualize.setSelected(false);
+        
+        visualize.addActionListener(this);
 
         //Listen for actions on buttons 1 and 3.
         b1.addActionListener(this);
