@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Random;
-import util.util;
+import util.Util;
 
 import javax.swing.*;
 
@@ -352,7 +352,7 @@ public class SimulateWindow extends JFrame implements ActionListener {
 			cPanel.panels[i].repaint();
 		}
 		
-		String elapsed = util.parseTime(System.currentTimeMillis() - timeStart);
+		String elapsed = Util.parseTime(System.currentTimeMillis() - timeStart);
 
 		exWin.update(numCauses, numAllows, numHelps, numPrevents, numDespites, numInvalids, totalAccepted, attempts, elapsed, premise, overallAffector, overallPatient, eZero);
 		return retval;

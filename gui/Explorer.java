@@ -5,10 +5,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import javax.swing.JMenuBar;
-import util.util;
+import util.Util;
 import java.util.ArrayList;
 
 import plotter.Graph3d;
+import javax.vecmath.*; // Color3f, Vector3d
 
 public class Explorer {	
 	/**
@@ -37,6 +38,17 @@ public class Explorer {
 	 * Contains the data given to the visualizer
 	 */
 	ArrayList<int[]> visData = new ArrayList<int[]>();
+	
+	/**
+	 * Holds the 3d point for each of the accepted trails
+	 */
+	ArrayList<Vector3d> points = new ArrayList<Vector3d>();
+	
+	/**
+	 * Passed to the grapher to indicate which color the 
+	 * data point should be mapped as.
+	 */
+	ArrayList<Color3f> concVerbColor = new ArrayList<Color3f>();
 	
 	/**
 	 * Integers to indicate the max and min values
@@ -286,7 +298,7 @@ public class Explorer {
 			}
 		}
 		
-		String elapsed = util.parseTime(System.currentTimeMillis() - timeStart);
+		String elapsed = Util.parseTime(System.currentTimeMillis() - timeStart);
 		
 		exp.update(numCauses, numAllows, numHelps, numPrevents, numDespites, numInvalids, num_accepted, 
 				attempts, elapsed, premises, overallAffector, overallPatient, eZero);
@@ -374,7 +386,7 @@ public class Explorer {
 		continueExplore = true;
 		
 		overallAffector = conclusion.getAWord();
-		overallPatient = conclusion.eNegated ? util.NEG_CHAR + conclusion.getBWord() : conclusion.getBWord();
+		overallPatient = conclusion.eNegated ? Util.NEG_CHAR + conclusion.getBWord() : conclusion.getBWord();
 		
 		hierVals = new int[panels.length * 2];
 		hierLocked = new boolean[panels.length * 2];
@@ -473,8 +485,8 @@ public class Explorer {
 			long elapsed = System.currentTimeMillis() - timeStart;
 			long remaining = 0;
 			if (aPercDone > 0) remaining = (100 - aPercDone) * (elapsed / aPercDone);
-			String taken = util.parseTime(elapsed);
-			String remain = util.parseTime(remaining);
+			String taken = Util.parseTime(elapsed);
+			String remain = Util.parseTime(remaining);
 			exp.update(aPercDone, taken, remain);
 			oldPercDone = aPercDone;
 		}
@@ -512,12 +524,30 @@ public class Explorer {
 		if (accepted)
 		{
 			conclusion.update();
-			if(conclusion.verb.equals("Causes")) numCauses++;
-			else if(conclusion.verb.equals("Allows")) numAllows++;
-			else if(conclusion.verb.equals("Helps")) numHelps++;
-			else if(conclusion.verb.equals("Prevents")) numPrevents++;
-			else if(conclusion.verb.equals("Despite")) numDespites++;
-			else if(conclusion.verb.equals("Invalid")) numInvalids++;
+			if(conclusion.verb.equals("Causes")) {
+				numCauses++;
+				concVerbColor.add(Util.CAUSES_COLOR);
+			}
+			else if(conclusion.verb.equals("Allows")) { 
+				numAllows++;
+				concVerbColor.add(Util.ALLOWS_COLOR);
+			}
+			else if(conclusion.verb.equals("Helps")) {
+				numHelps++;
+				concVerbColor.add(Util.HELPS_COLOR);
+			}
+			else if(conclusion.verb.equals("Prevents")) {
+				numPrevents++;
+				concVerbColor.add(Util.PREVENTS_COLOR);
+			}
+			else if(conclusion.verb.equals("Despite")) {
+				numDespites++;
+				concVerbColor.add(Util.DESPITE_COLOR);
+			}
+			else if(conclusion.verb.equals("Invalid")) {
+				numInvalids++;
+				concVerbColor.add(Util.INVALID_COLOR);
+			}
 			num_accepted++;
 		}
 		
@@ -528,27 +558,14 @@ public class Explorer {
 			else output.write("N\n");
 		}
 		
-		if (visualize) {
-			if (attempts == 0) { // Our first time through
-				xMin = xMax = panels[0].iA;
-				xMin = yMax = panels[0].iB;
-				zMin = zMax = panels[1].iB;
-			} else { // Check for new max min vals
-				if (panels[0].iA < xMin) xMin = panels[0].iA;
-				if (panels[0].iA > xMax) xMax = panels[0].iA;
-				if (panels[0].iB < yMin) yMin = panels[0].iB;
-				if (panels[0].iB > yMax) yMax = panels[0].iB;
-				if (panels[1].iB < zMin) zMin = panels[1].iB;
-				if (panels[1].iB > zMax) zMax = panels[1].iB;
-			}
+		// Create a point for graph3d to display
+		if (visualize && accepted) {
+			Vector3d v = new Vector3d(
+					(panels[0].iA + eZero)/((double)(2*eZero)),
+					(panels[0].iB + eZero)/((double)(2*eZero)), 
+					(panels[1].iB + eZero)/((double)(2*eZero)));
 			
-			if (accepted) {
-				int[] tuple = new int[3];
-				tuple[0] = panels[0].iA;
-				tuple[1] = panels[0].iB;
-				tuple[2] = panels[1].iB;
-				visData.add(tuple);
-			}
+			points.add(v);
 		}
 	}
 	
@@ -578,11 +595,11 @@ public class Explorer {
 		g.setYAxisName(panels[0].bWord);
 		g.setZAxisName(panels[1].bWord);
 		
-		g.setXMinMax(xMin, xMax);
-		g.setYMinMax(yMin, yMax);
-		g.setZMinMax(zMin, zMax);
+		g.setXMinMax(-eZero, eZero);
+		g.setYMinMax(-eZero, eZero);
+		g.setZMinMax(-eZero, eZero);
 		
-		g.setPoints(visData);
+		g.setPoints(points, concVerbColor);
 
 		g.graph();
 	}

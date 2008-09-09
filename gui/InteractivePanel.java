@@ -4,6 +4,8 @@ import java.awt.Font;
 import java.awt.event.*;
 import javax.swing.*;
 
+import util.Util;
+
 
 /**
  * An extension of the basic ArrowPanel class that allows for interaction
@@ -419,19 +421,19 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
         	
         	
         } else if (source.equals("Causes")) {
-        	holding.setPanel(id, ContainerPanel.CAUSES);
+        	holding.setPanel(id, Util.CAUSES);
         	holding.resetMenus();
         	
         } else if (source.equals("Helps")) {
-        	holding.setPanel(id, ContainerPanel.HELPS);
+        	holding.setPanel(id, Util.HELPS);
         	holding.resetMenus();
         	
         } else if (source.equals("Prevents")) { //Should not ever be used as is disabled currently!
-        	holding.setPanel(id, ContainerPanel.PREVENTS);
+        	holding.setPanel(id, Util.PREVENTS);
         	holding.resetMenus();
         	
         } else if (source.equals("Despite")) {
-        	holding.setPanel(id, ContainerPanel.DESPITE);
+        	holding.setPanel(id, Util.DESPITE);
         	holding.resetMenus();
         
         } else if (source.equals("Self-Target")) {

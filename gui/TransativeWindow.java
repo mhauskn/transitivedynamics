@@ -1,7 +1,7 @@
 package gui;
 
 import io.ModelIO;
-import util.util;
+import util.Util;
 
 import java.awt.Color;
 import java.awt.event.*;
@@ -151,13 +151,14 @@ public class TransativeWindow implements ActionListener, ItemListener {
     		
     	if (source.equals(MAGNITUDE_STRING)) {
     		cPanel.setMagnitudes(e.getStateChange() == ItemEvent.SELECTED);
+    		cPanel.repaintAll();
     		
     	} else if (source.equals(TCR_STRING)) {
     		cPanel.setTCR(e.getStateChange() == ItemEvent.SELECTED);
+    		cPanel.repaintAll();
     		
     	} else if (source.equals(CONSTRAIN_STRING)) {
     		cPanel.setShowConstrain(e.getStateChange() == ItemEvent.SELECTED);
-    		
     	} 
     }
     
@@ -194,7 +195,7 @@ public class TransativeWindow implements ActionListener, ItemListener {
 	 */
 	private void saveModel ()
 	{
-		JFileChooser chooser = util.chooseFile (TDM_FILE_EXTENSION, "Transitive Dynamics Models (*" +
+		JFileChooser chooser = Util.chooseFile (TDM_FILE_EXTENSION, "Transitive Dynamics Models (*" +
 				TDM_FILE_EXTENSION + ")");
 		int returned = chooser.showSaveDialog(window);
     	
@@ -211,7 +212,7 @@ public class TransativeWindow implements ActionListener, ItemListener {
 	 */
 	private void openModel ()
 	{
-		JFileChooser chooser = util.chooseFile (TDM_FILE_EXTENSION, "Transitive Dynamics Models (*" + 
+		JFileChooser chooser = Util.chooseFile (TDM_FILE_EXTENSION, "Transitive Dynamics Models (*" + 
 				TDM_FILE_EXTENSION + ")");
 		int returned = chooser.showOpenDialog(window);
     	
@@ -225,7 +226,7 @@ public class TransativeWindow implements ActionListener, ItemListener {
 	 */
 	private void saveImage ()
 	{
-		JFileChooser chooser = util.chooseFile (".png", "PNG Image Files (*.png)");
+		JFileChooser chooser = Util.chooseFile (".png", "PNG Image Files (*.png)");
 		int returned = chooser.showSaveDialog(window);
     	
 		if (returned == JFileChooser.APPROVE_OPTION) {

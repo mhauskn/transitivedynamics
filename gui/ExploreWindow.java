@@ -1,7 +1,7 @@
 
 package gui;
 
-import util.util;
+import util.Util;
 
 
 import java.awt.*;
@@ -184,7 +184,7 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	    {
 	    	if (exportExplore)
 	    	{
-				JFileChooser chooser = util.chooseFile (EXPORT_FILE_EXTENSION, 
+				JFileChooser chooser = Util.chooseFile (EXPORT_FILE_EXTENSION, 
 						"Comma Seperated Value (*" + EXPORT_FILE_EXTENSION + ")");
 				
 				int returned = chooser.showSaveDialog(window);

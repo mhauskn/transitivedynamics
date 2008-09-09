@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.GridLayout;
 //import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+import util.Util;
 
 
 import javax.swing.JPanel;
@@ -15,11 +16,6 @@ public class ContainerPanel extends JPanel {
 	
 	private static final long serialVersionUID = 9181592230994808685L;
 		
-	public static final int CAUSES = 0;
-	public static final int PREVENTS = 1;
-	public static final int HELPS = 3;
-	public static final int DESPITE = 4;
-	
 	public static final int OR_RULESET = 0;
 	public static final int ADD_RULESET = 1;
 	public static final int AVG_RULESET = 2;
@@ -139,7 +135,7 @@ public class ContainerPanel extends JPanel {
 		
 		// Set all the panels as causes
 		for (int i = 0; i < panels.length; i++) {
-			setPanel(i, CAUSES);
+			setPanel(i, Util.CAUSES);
 		}
 				
 		resetMenus();
@@ -279,32 +275,32 @@ public class ContainerPanel extends JPanel {
 		if (eWidth > 500) eWidth = 500;
 		
 		String verb = "Causes";
-		if (value == HELPS) verb = "Helps";
-		if (value == PREVENTS) verb = "Prevents";
-		if (value == DESPITE) verb = "Despite";
+		if (value == Util.HELPS) verb = "Helps";
+		if (value == Util.PREVENTS) verb = "Prevents";
+		if (value == Util.DESPITE) verb = "Despite";
 		
 		// We have specific, easy setups for the first premise
 		if (num == 0) {
 			switch (value) {
-			case CAUSES:
+			case Util.CAUSES:
 				panels[0].iE = eWidth;
 				panels[0].iA = (eWidth * 2) / 3;
 				panels[0].iB = -eWidth / 3;
 				break;
 				
-			case HELPS:
+			case Util.HELPS:
 				panels[0].iE = eWidth;
 				panels[0].iA = eWidth / 4;
 				panels[0].iB = eWidth / 2;
 				break;
 				
-			case PREVENTS:
+			case Util.PREVENTS:
 				panels[0].iB = eWidth / 3;
 				
 				panels[0].iA = -(eWidth * 2) / 3;
 				break;
 				
-			case DESPITE:
+			case Util.DESPITE:
 				panels[0].iE = -eWidth;
 				panels[0].iA = eWidth / 3;
 				panels[0].iB = (-eWidth * 2) / 3;
@@ -325,13 +321,13 @@ public class ContainerPanel extends JPanel {
 			
 			// Setup the e value
 			if (panels[num].eNegated) {
-				if (value == CAUSES || value == HELPS)
+				if (value == Util.CAUSES || value == Util.HELPS)
 					panels[num].iE = -dir * eWidth;
 				else
 					panels[num].iE = dir * eWidth;
 				
 			} else {
-				if (value == CAUSES || value == HELPS)
+				if (value == Util.CAUSES || value == Util.HELPS)
 					panels[num].iE = dir * eWidth;
 				else
 					panels[num].iE = -dir * eWidth;
