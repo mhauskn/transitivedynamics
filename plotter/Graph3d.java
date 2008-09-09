@@ -53,8 +53,11 @@ public class Graph3d extends JFrame {
 	// Number of gridlines between major axies
 	private int NUM_GRIDLINES = 5;
 	
-	// Array to hold each of our datapoints
-	private Vector3d[] dataPoints = new Vector3d[0];
+	// ArrayList to hold each of our datapoints
+	private ArrayList<Vector3d> dataPoints = new ArrayList<Vector3d>();
+	
+	// ArrayList to hold the coloring of each verb
+	private ArrayList<Color3f> verbColors = new ArrayList<Color3f>();
 	
 	// Labels for each of our Axies
 	private String X_LABEL = "X-Axis";
@@ -64,23 +67,14 @@ public class Graph3d extends JFrame {
 	// Min and max X Values
 	private double X_MIN = 0.0;
 	private double X_MAX = 1.0;
-	private double X_DIFF = 1.0;
-	// True if user has set X MAX/MIN
-	private boolean setXVals = false;
 	
 	// Min and max Y Values
 	private double Y_MIN = 0.0;
 	private double Y_MAX = 1.0;
-	private double Y_DIFF = 1.0;
-	// True if user has set Y MAX/MIN
-	private boolean setYVals = false;
 	
 	// Min and max Z Values
 	private double Z_MIN = 0.0;
 	private double Z_MAX = 1.0;
-	private double Z_DIFF = 1.0;
-	// True if user has set Z MAX/MIN
-	private boolean setZVals = false;
 	
 	private static final String LABEL_FONT = "Serif";
 	private static final int LABEL_FONT_SIZE = 24;
@@ -167,51 +161,31 @@ public class Graph3d extends JFrame {
     {
     	X_MIN = xMin;
     	X_MAX = xMax;
-    	X_DIFF = xMax - xMin;
-    	setXVals = true;
     }
     
     public void setYMinMax (double yMin, double yMax)
     {
     	Y_MIN = yMin;
     	Y_MAX = yMax;
-    	Y_DIFF = yMax - yMin;
-    	setYVals = true;
     }
 
     public void setZMinMax (double zMin, double zMax)
     {
     	Z_MIN = zMin;
     	Z_MAX = zMax;
-    	Z_DIFF = zMax - zMin;
-    	setZVals = true;
     }
     
     /**
-     * Converts the arraylist of 3d points into 
-     * a usable vector 3f. It is required to first
-     * set the max and min values for each axis!
-     * @param a
+     * Sets the graph3d's points equal to the specified points and also 
+     * colors the points according to the verb specification given.
+     * @param points
+     * @param verbs
      */
-    public void setPoints (ArrayList<int[]> a)
+    public void setPoints (ArrayList<Vector3d> points, 
+    		ArrayList<Color3f> concVerbs)
     {
-    	if (!setXVals || !setYVals || !setZVals)
-    		return;
-    	
-    	dataPoints = new Vector3d[a.size()];
-    	
-    	for (int i = 0; i < a.size(); i++)
-    	{
-    		int[] curr = a.get(i);
-    		
-    		if (curr.length != 3)
-    			return;
-    		
-    		// Normalize the data points on a 0-1 scale
-    		dataPoints[i] = new Vector3d((curr[0]-X_MIN)/X_DIFF,
-    				(curr[1]-Y_MIN)/Y_DIFF,
-    				(curr[2]-Z_MIN)/Z_DIFF);
-    	}
+    	dataPoints = points;
+    	verbColors = concVerbs;
     }
     
 //---------------------PRIVATE METHODS-------------------------
@@ -243,7 +217,7 @@ public class Graph3d extends JFrame {
         
         addLabels(objRotate); // Add some axis labels to objRotate
         
-        addSpheres(objRotate, dataPoints); // Add the actual data
+        addSpheres(objRotate); // Add the actual data
     	
         
         // a bounding sphere specifies a region a behavior is active
@@ -281,10 +255,12 @@ public class Graph3d extends JFrame {
     /**
      * Creates the appearance for our points
      */
-    private Appearance createAppearance() {
+    private Appearance createAppearance(Color3f diffuseColor) {
         Appearance appear = new Appearance();
         Material material = new Material();
-        //material.setDiffuseColor(0.0f, 0.0f, 1.0f);
+        
+        material.setDiffuseColor(diffuseColor);
+        
         material.setShininess(50.0f);
         // make modifications to default material properties
         appear.setMaterial(material);
@@ -301,19 +277,20 @@ public class Graph3d extends JFrame {
      * @param t
      * @param p
      */
-    private void addSpheres (TransformGroup t, Vector3d[] p)
+    private void addSpheres (TransformGroup t)
     {
-    	for (int i = 0; i < p.length; i++)
+    	for (int i = 0; i < dataPoints.size(); i++)
     	{
-    		Sphere s = new Sphere(0.01f, Sphere.GENERATE_NORMALS, createAppearance());
+    		Sphere s = new Sphere(0.01f, Sphere.GENERATE_NORMALS, 
+    				createAppearance(verbColors.get(i)));
     		Transform3D translate = new Transform3D();
-    		translate.setTranslation(p[i]);
+    		translate.setTranslation(dataPoints.get(i));
     		TransformGroup tg = new TransformGroup(translate);
     		tg.addChild(s);
     		t.addChild(tg);
     	}
     }
-    
+        
     /**
      * Adds labels to our axises
      */
