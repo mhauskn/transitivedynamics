@@ -17,7 +17,9 @@ public class Util {
 	
 	public static final char NEG_CHAR = '\u00AC';
 	
-	
+	/**
+	 * Defines numbers associated with each verb
+	 */
 	public static final int CAUSES 		= 0;
 	public static final int PREVENTS 	= 1;
 	public static final int HELPS 		= 2;
