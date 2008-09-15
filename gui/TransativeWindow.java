@@ -28,6 +28,14 @@ public class TransativeWindow implements ActionListener, ItemListener {
 	public static final String APP_VER = " 7.5.5";
 	
 	/**
+	 * Strings for the Menu Names
+	 */
+	public static final String FILE_MENU				= "File";
+	public static final String MODELS_MENU				= "Models";
+	public static final String ACTIONS_MENU				= "Actions";
+	public static final String HELP_MENU				= "Help";
+	
+	/**
 	 * Strings for the GUI Menu Items
 	 */
 	public static final String SAVE_STRING 				= "Save Model...";
@@ -39,8 +47,8 @@ public class TransativeWindow implements ActionListener, ItemListener {
 	public static final String TWO_PREMISE_STRING		= "New 2-Premise Model";
 	public static final String THREE_PREMISE_STRING		= "New 3-Premise Model";
 	public static final String CUSTOM_MODEL_STRING		= "New Custom Model";
-	public static final String EXPLORE_STRING			= "Explore...";
-	public static final String SIMULATE_STRING			= "Simulate...";
+	public static final String EXPLORE_STRING			= "Explore";
+	public static final String VISUALIZE_STRING			= "Visualize";
 	public static final String MAGNITUDE_STRING			= "Show Magnitudes";
  	public static final String TCR_STRING				= "Show TCR";
 	public static final String CONSTRAIN_STRING			= "Show Constraints";
@@ -138,6 +146,9 @@ public class TransativeWindow implements ActionListener, ItemListener {
         // If they chose the "Explore..." menu item
 		} else if (source.equals(EXPLORE_STRING)) {
 	    	new ExploreWindow(window.getX() + window.getWidth(), window.getY(), cPanel, menuBar);			
+  		
+		} else if (source.equals(VISUALIZE_STRING)) {
+  			new VisualizeWindow(0, 0, cPanel, menuBar);
   		}
     }
     
@@ -291,6 +302,7 @@ public class TransativeWindow implements ActionListener, ItemListener {
 	private void initializeMenus (JMenuBar menu) {
 		initializeFileMenu(menu);
 		initializeModelsMenu(menu);
+		initializeActionsMenu(menu);
 		initializeHelpMenu (menu);
 	}
 	
@@ -299,7 +311,7 @@ public class TransativeWindow implements ActionListener, ItemListener {
 	 */
 	private void initializeFileMenu (JMenuBar menu)
 	{
-		JMenu subMenu = new JMenu("File");
+		JMenu subMenu = new JMenu(FILE_MENU);
         subMenu.setMnemonic(KeyEvent.VK_F);
         menu.add(subMenu);
         
@@ -323,7 +335,7 @@ public class TransativeWindow implements ActionListener, ItemListener {
 	 */
 	private void initializeModelsMenu (JMenuBar menu)
 	{
-		JMenu subMenu = new JMenu("Models");
+		JMenu subMenu = new JMenu(MODELS_MENU);
 		subMenu.setMnemonic(KeyEvent.VK_M);
 		menu.add(subMenu);
 		
@@ -347,10 +359,20 @@ public class TransativeWindow implements ActionListener, ItemListener {
 		addMenuItem(subMenu, TWO_PREMISE_STRING, KeyEvent.VK_2, false);
 		addMenuItem(subMenu, THREE_PREMISE_STRING, KeyEvent.VK_3, false);
 		addMenuItem(subMenu, CUSTOM_MODEL_STRING, KeyEvent.VK_C, false);
-		
-		subMenu.addSeparator();
+	}
+	
+	/*
+	 * Initialize the Models Menu
+	 */
+	private void initializeActionsMenu (JMenuBar menu)
+	{
+		JMenu subMenu = new JMenu(ACTIONS_MENU);
+		subMenu.setMnemonic(KeyEvent.VK_A);
+		menu.add(subMenu);
 		
 		addMenuItem(subMenu, EXPLORE_STRING, KeyEvent.VK_X, true);
+		
+		addMenuItem(subMenu, VISUALIZE_STRING, KeyEvent.VK_V, true);
 	}
 	
 	/*
