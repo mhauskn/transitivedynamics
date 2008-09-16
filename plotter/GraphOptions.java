@@ -29,6 +29,8 @@ public class GraphOptions extends JPanel implements ActionListener
 		
 		add(addModelOptions());
 		add(addResultSelectors());
+		add(addAxisOptions());
+		add(Box.createRigidArea(new Dimension(10,100)));
 	}
 	
 	public void actionPerformed (ActionEvent e)
@@ -75,9 +77,73 @@ public class GraphOptions extends JPanel implements ActionListener
 		
 		modelPane.add(new JButton("Visualize Current Model"));
 		modelPane.add(Box.createRigidArea(new Dimension(10,10)));
-		modelPane.add(new JLabel("Density of Model", JLabel.LEADING));
+		modelPane.add(new JLabel("Density of Model", JLabel.CENTER));
 		modelPane.add(densitySlider);
 		
 		return modelPane;
+	}
+	
+	private JPanel addAxisOptions ()
+	{
+		String title = "Axis Options";
+		
+		JPanel axisPane = new JPanel();
+		axisPane.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(title),
+                BorderFactory.createEmptyBorder(5,5,5,5)));
+		
+		axisPane.setLayout(new BoxLayout(axisPane, BoxLayout.PAGE_AXIS));
+		
+		String[] vecs = { "", "A", "B" };
+				
+		JLabel xLabel = new JLabel("X-Axis:");
+		//xLabel.setPreferredSize(new Dimension(50,50));
+		JComboBox xCombo = new JComboBox(vecs);
+		xCombo.setSelectedIndex(1);
+		//xCombo.setPreferredSize(new Dimension((int)(axisPaneSize.getWidth()/2),5));
+		
+		JLabel yLabel = new JLabel("Y-Axis:");
+		//yLabel.setPreferredSize(new Dimension(50,50));
+		JComboBox yCombo = new JComboBox(vecs);
+		yCombo.setSelectedIndex(1);
+		//yCombo.setPreferredSize(new Dimension(10,20));
+		
+		JLabel zLabel = new JLabel("Z-Axis:");
+		//zLabel.setPreferredSize(new Dimension(50,50));
+		JComboBox zCombo = new JComboBox(vecs);
+		zCombo.setSelectedIndex(1);
+		//zCombo.setPreferredSize(new Dimension(30,40));
+		
+		JPanel x = new JPanel();
+		x.setLayout(new BoxLayout(x, BoxLayout.LINE_AXIS));
+		x.add(Box.createRigidArea(new Dimension(10,10)));
+		x.add(xLabel);
+		x.add(Box.createRigidArea(new Dimension(10,10)));
+		x.add(xCombo);
+		x.add(Box.createRigidArea(new Dimension(10,10)));
+		
+		JPanel y = new JPanel();
+		y.setLayout(new BoxLayout(y, BoxLayout.LINE_AXIS));
+		y.add(Box.createRigidArea(new Dimension(10,10)));
+		y.add(yLabel);
+		y.add(Box.createRigidArea(new Dimension(10,10)));
+		y.add(yCombo);
+		y.add(Box.createRigidArea(new Dimension(10,10)));
+		
+		JPanel z = new JPanel();
+		z.setLayout(new BoxLayout(z, BoxLayout.LINE_AXIS));
+		z.add(Box.createRigidArea(new Dimension(10,10)));
+		z.add(zLabel);
+		z.add(Box.createRigidArea(new Dimension(10,10)));
+		z.add(zCombo);
+		z.add(Box.createRigidArea(new Dimension(10,10)));
+		
+		axisPane.add(x);
+		axisPane.add(Box.createRigidArea(new Dimension(10,10)));
+		axisPane.add(y);
+		axisPane.add(Box.createRigidArea(new Dimension(10,10)));
+		axisPane.add(z);
+		
+		return axisPane;
 	}
 }

@@ -148,7 +148,7 @@ public class TransativeWindow implements ActionListener, ItemListener {
 	    	new ExploreWindow(window.getX() + window.getWidth(), window.getY(), cPanel, menuBar);			
   		
 		} else if (source.equals(VISUALIZE_STRING)) {
-  			new VisualizeWindow(0, 0, cPanel, menuBar);
+  			new VisualizeWindow(0, 0, cPanel, menuBar); 
   		}
     }
     
