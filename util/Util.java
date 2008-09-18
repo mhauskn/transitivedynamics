@@ -1,5 +1,6 @@
 package util;
 
+import java.awt.Color;
 import java.io.File;
 
 import javax.swing.JFileChooser;
@@ -30,17 +31,17 @@ public class Util {
 	 * Defines colors which are used to represent the different
 	 * verbs.
 	 */
-	public static final Color3f CAUSES_COLOR =  // Pale Green
+	public static Color3f CAUSES_COLOR =  // Pale Green
 		new Color3f (152/255f, 251/255f, 152/255f);
-	public static final Color3f PREVENTS_COLOR =  // Light Sky Blue
+	public static Color3f PREVENTS_COLOR =  // Light Sky Blue
 		new Color3f (135/255f, 206/255f, 250/255f);
-	public static final Color3f HELPS_COLOR = // Light Salmon
+	public static Color3f HELPS_COLOR = // Light Salmon
 		new Color3f (255/255f, 160/255f, 122/255f);
-	public static final Color3f DESPITE_COLOR = // Khaki
+	public static Color3f DESPITE_COLOR = // Khaki
 		new Color3f (240/255f, 230/255f, 140/255f);	
-	public static final Color3f ALLOWS_COLOR = // Light Coral
+	public static Color3f ALLOWS_COLOR = // Light Coral
 		new Color3f (240/255f, 128/255f, 128/255f);
-	public static final Color3f INVALID_COLOR = // Light Gray
+	public static Color3f INVALID_COLOR = // Light Gray
 		new Color3f (211/255f, 211/255f, 211/255f);
 	
 	public static final Color3f BLACK = new Color3f(0f,0f,0f);
@@ -88,6 +89,11 @@ public class Util {
 		hr -= day * 24;
 		
 		return day + "d " + hr + "h " + min + "m " + sec + "s";
+	}
+	
+	public static Color toColor (Color3f color)
+	{
+		return new Color(color.x,color.y,color.z);
 	}
 	
 	/**

@@ -2,6 +2,10 @@ package plotter;
 
 import javax.swing.*;
 
+import util.Util;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.*;
@@ -9,6 +13,20 @@ import java.awt.event.*;
 public class GraphOptions extends JPanel implements ActionListener
 {
 	private String myTitle = "Graph Options";
+	
+	public static final String CHANGE_CAUSE_COLOR = "CHANGE_CAUSE_COLOR";
+	public static final String CHANGE_PREVENTS_COLOR = "CHANGE_PREVENTS_COLOR";
+	public static final String CHANGE_ALLOWS_COLOR = "CHANGE_ALLOWS_COLOR";
+	public static final String CHANGE_HELPS_COLOR = "CHANGE_HELPS_COLOR";
+	public static final String CHANGE_DESPITE_COLOR = "CHANGE_DESPITE_COLOR";
+	public static final String CHANGE_INVALID_COLOR = "CHANGE_INVALID_COLOR";
+	
+	private JButton changeCauseColor;
+	private JButton changePreventColor;
+	private JButton changeAllowColor;
+	private JButton changeHelpColor;
+	private JButton changeDespiteColor;
+	private JButton changeInvalidColor;
 	
 	private static final int DEN_MIN = 0;
 	private static final int DEN_MAX = 100;
@@ -30,12 +48,41 @@ public class GraphOptions extends JPanel implements ActionListener
 		add(addModelOptions());
 		add(addResultSelectors());
 		add(addAxisOptions());
-		add(Box.createRigidArea(new Dimension(10,100)));
+		add(addColorOptions());
+		//add(Box.createRigidArea(new Dimension(10,100)));
 	}
 	
 	public void actionPerformed (ActionEvent e)
 	{
+		String command = e.getActionCommand();
 		
+		if (command.equals(CHANGE_ALLOWS_COLOR))
+		{
+			JFrame frame = new JFrame("Choose Allow Color");
+
+	        //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	        
+	
+	        //Create and set up the content pane.
+	        JComponent newContentPane = new ColorChanger("Color Palette");
+	        newContentPane.setOpaque(true); //content panes must be opaque
+	        frame.setContentPane(newContentPane);
+	
+	        //Display the window.
+	        frame.pack();
+	        frame.setVisible(true);
+		}
+	}
+	
+	public void updateColorKey ()
+	{
+		changeCauseColor.setBackground(Util.toColor(Util.CAUSES_COLOR));
+		changePreventColor.setBackground(Util.toColor(Util.PREVENTS_COLOR));
+		changeAllowColor.setBackground(Util.toColor(Util.ALLOWS_COLOR));
+		changeHelpColor.setBackground(Util.toColor(Util.HELPS_COLOR));
+		changeDespiteColor.setBackground(Util.toColor(Util.DESPITE_COLOR));
+		changeInvalidColor.setBackground(Util.toColor(Util.INVALID_COLOR));
 	}
 	
 	private JPanel addResultSelectors ()
@@ -72,10 +119,17 @@ public class GraphOptions extends JPanel implements ActionListener
 		
 		modelPane.setLayout(new BoxLayout(modelPane, BoxLayout.PAGE_AXIS));
 		
+		JButton vizButton = new JButton("Visualize Current Model");
+		vizButton.setHorizontalAlignment(JLabel.CENTER);
+		
+		JButton toggleButton = new JButton("Toggle Background Colors");
+		
 		JSlider densitySlider = new JSlider(JSlider.HORIZONTAL,
 				DEN_MIN, DEN_MAX, DEN_INIT);
 		
-		modelPane.add(new JButton("Visualize Current Model"));
+		modelPane.add(vizButton);
+		modelPane.add(Box.createRigidArea(new Dimension(10,10)));
+		modelPane.add(toggleButton);
 		modelPane.add(Box.createRigidArea(new Dimension(10,10)));
 		modelPane.add(new JLabel("Density of Model", JLabel.CENTER));
 		modelPane.add(densitySlider);
@@ -145,5 +199,60 @@ public class GraphOptions extends JPanel implements ActionListener
 		axisPane.add(z);
 		
 		return axisPane;
+	}
+	
+	/**
+	 * Creates the color key and color chooser buttons
+	 * @return
+	 */
+	public JPanel addColorOptions ()
+	{
+		String title = "Color Key";
+		
+		JPanel modelPane = new JPanel();
+		modelPane.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(title),
+                BorderFactory.createEmptyBorder(5,5,5,5)));
+		
+		modelPane.setLayout(new GridLayout(3,2));
+		
+		changeCauseColor = new JButton("Cause");
+		changeCauseColor.setBackground(Util.toColor(Util.CAUSES_COLOR));
+		changeCauseColor.setActionCommand(CHANGE_CAUSE_COLOR);
+		changeCauseColor.addActionListener(this);
+		
+		changePreventColor = new JButton("Prevent");
+		changePreventColor.setBackground(Util.toColor(Util.PREVENTS_COLOR));
+		changePreventColor.setActionCommand(CHANGE_PREVENTS_COLOR);
+		changePreventColor.addActionListener(this);
+		
+		changeAllowColor = new JButton("Allow");
+		changeAllowColor.setBackground(Util.toColor(Util.ALLOWS_COLOR));
+		changeAllowColor.setActionCommand(CHANGE_ALLOWS_COLOR);
+		changeAllowColor.addActionListener(this);
+		
+		changeHelpColor = new JButton("Help");
+		changeHelpColor.setBackground(Util.toColor(Util.HELPS_COLOR));
+		changeHelpColor.setActionCommand(CHANGE_HELPS_COLOR);
+		changeHelpColor.addActionListener(this);
+		
+		changeDespiteColor = new JButton("Despite");
+		changeDespiteColor.setBackground(Util.toColor(Util.DESPITE_COLOR));
+		changeDespiteColor.setActionCommand(CHANGE_DESPITE_COLOR);
+		changeDespiteColor.addActionListener(this);
+		
+		changeInvalidColor = new JButton("Invalid");
+		changeInvalidColor.setBackground(Util.toColor(Util.INVALID_COLOR));
+		changeInvalidColor.setActionCommand(CHANGE_INVALID_COLOR);
+		changeInvalidColor.addActionListener(this);
+		
+		modelPane.add(changeCauseColor);
+		modelPane.add(changeAllowColor);
+		modelPane.add(changePreventColor);
+		modelPane.add(changeDespiteColor);
+		modelPane.add(changeHelpColor);
+		modelPane.add(changeInvalidColor);
+		
+		return modelPane;
 	}
 }
