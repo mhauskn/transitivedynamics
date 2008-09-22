@@ -26,7 +26,6 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	public static final String SIMULATE_STRING			= "simulate";
 	public static final String CLEAR_STRING				= "clear";
 	public static final String EXPORT_STRING			= "export";
-	public static final String VISUALIZE_STRING			= "visualize";
 
 	/**
 	 * The actual explore window
@@ -47,11 +46,6 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	 * Checkbox to toggle exporting to CSV file
 	 */
 	protected static JCheckBox export;
-	
-	/**
-	 * Checkbox to visualize explore
-	 */
-	protected static JCheckBox visualize;
 	
 	/**
 	 * The main Container Panel holding the panels
@@ -80,11 +74,6 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	private boolean exportExplore = false;
 	
 	/**
-	 * True if we want to export the explore to a file
-	 */
-	private boolean visualizeExplore = false;
-	
-	/**
 	 * The file to export the explore to
 	 */
 	private String exportFile = "";
@@ -92,33 +81,6 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	
 //---------------------------------------------------------------------------------------
 // 	PUBLIC METHODS
-	
-	/**
-	 * The explore thread is designed to make sure that the program's menu's
-	 * stay free so that it is possible to stop the explore while it is running.
-	 */
-	class exploreThread implements Runnable {
-		ExploreWindow exp;
-		exploreThread(ExploreWindow current) {
-			exp = current;
-			Thread t = new Thread(this);
-			t.start();
-		}
-		
-		public void run() {
-			try 
-			{
-				explorer = new Explorer(cPanel, exp, menuBar);
-				if (exportExplore)
-					explorer.initializeBufferedWriter(exportFile);
-				explorer.explore();
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-		}
-	}
 	
 	/**
 	 * Creates a new explore window
@@ -135,6 +97,76 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	}
 	
 	/**
+	 * The explore thread is designed to make sure that the program's menu's
+	 * stay free so that it is possible to stop the explore while it is running.
+	 */
+	class exploreThread implements Runnable {
+		ExploreWindow exp;
+		exploreThread(ExploreWindow current) {
+			exp = current;
+			Thread t = new Thread(this);
+			t.start();
+		}
+		
+		public void run() {
+			try 
+			{
+				explorer = new Explorer(cPanel, menuBar);
+				if (exportExplore)
+				{
+					explorer.setExport(true);
+					explorer.initializeBufferedWriter(exportFile);
+				}
+				
+				new exploreUpdateThread (explorer, exp);
+				
+				explorer.explore();
+				
+				exp.update(explorer.numCauses, explorer.numAllows, 
+						explorer.numHelps, explorer.numPrevents, explorer.numDespites, 
+						explorer.numInvalids, explorer.num_accepted, explorer.attempts, 
+						explorer.timeTaken, explorer.premises, explorer.overallAffector, 
+						explorer.overallPatient, explorer.eZero);
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
+	 * exploreUpdateThread is designed to update the explore
+	 * progress in the explore window every .5 second or so.
+	 */
+	class exploreUpdateThread implements Runnable {
+		Explorer explorer;
+		ExploreWindow expw;
+		exploreUpdateThread(Explorer exp, ExploreWindow _expW) {
+			explorer = exp;
+			expw = _expW;
+			Thread t = new Thread(this);
+			t.start();
+		}
+		
+		public void run() {
+			try 
+			{
+				while (explorer.aPercDone != 100)
+				{
+					expw.update(explorer.aPercDone, explorer.timeTaken, 
+							explorer.timeRemaining);
+					Thread.sleep(500);
+				}
+			}
+			catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/**
 	 * Updates the time remaining during the course of the explore
 	 * @param perc Percentage complete
 	 * @param taken Time taken
@@ -142,7 +174,6 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	 */
 	public void update(int perc, String taken, String remain) {
 		setTitle("[" + perc + "%]  Remaining: " + remain);
-		if(perc % 5 == 0) txtBox.append("-");
 	}
 	
 	/**
@@ -154,7 +185,6 @@ public class ExploreWindow extends JFrame implements ActionListener {
 		setTitle("Explore Window");
 		
 		DecimalFormat df = new DecimalFormat("#.##");
-		txtBox.append("\n");
 		if(numCauses > 0)  txtBox.append(overallAffector+" Cause   "+overallPatient +", "+ df.format(100.0 * (double)numCauses / (double)total) + "%, "+ numCauses + "  \n");
 		if(numAllows > 0)  txtBox.append(overallAffector+" Allow   "+overallPatient +", "+ df.format(100.0 * (double)numAllows / (double)total) + "%, "+numAllows + "  \n");
 		if(numHelps > 0)   txtBox.append(overallAffector+" Help    "+overallPatient +", "+ df.format(100.0 * (double)numHelps / (double)total) + "%, "+numHelps + "  \n");
@@ -166,6 +196,7 @@ public class ExploreWindow extends JFrame implements ActionListener {
 		txtBox.append("\nE-Magnitude " + eZero + " \n\n");
 		txtBox.append("Elapsed Time: " + elapsed + " \n");
 		txtBox.append("Premises: " + premises + "\n");
+		txtBox.append("\n------------------------\n\n");
 
 		txtBox.setCaretPosition(0);
 		b1.setEnabled(true);
@@ -179,23 +210,7 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	 */
 	public void actionPerformed(ActionEvent e) {
 		// Explore Requested
-	    if (START_EXPLORE_STRING.equals(e.getActionCommand()) && !exploring) 
-	    {
-	    	if (exportExplore)
-	    	{
-				JFileChooser chooser = Util.chooseFile (EXPORT_FILE_EXTENSION, 
-						"Comma Seperated Value (*" + EXPORT_FILE_EXTENSION + ")");
-				
-				int returned = chooser.showSaveDialog(window);
-				
-				if (returned == JFileChooser.APPROVE_OPTION) {
-					String absPath = chooser.getSelectedFile().getAbsolutePath();
-					if (!absPath.toLowerCase().endsWith(EXPORT_FILE_EXTENSION)) 
-						absPath += EXPORT_FILE_EXTENSION;
-					exportFile = absPath;					
-				}
-	    	}
-	    	
+	    if (START_EXPLORE_STRING.equals(e.getActionCommand()) && !exploring) {
 	    	startExplore();
 
 	    // Stop Explore Requested
@@ -208,10 +223,30 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	    	
 	    // Toggle export requested
 	    } else if(EXPORT_STRING.equals(e.getActionCommand())) {
-	    	exportExplore = !exportExplore;
-	    
-	    } else if(VISUALIZE_STRING.equals(e.getActionCommand())) {
-	    	visualizeExplore = !visualizeExplore;
+	    	if (!exportExplore)
+	    	{
+		    	JFileChooser chooser = Util.chooseFile (EXPORT_FILE_EXTENSION, 
+						"Comma Seperated Value (*" + EXPORT_FILE_EXTENSION + ")");
+				
+				int returned = chooser.showSaveDialog(window);
+				
+				if (returned == JFileChooser.APPROVE_OPTION) {
+					String absPath = chooser.getSelectedFile().getAbsolutePath();
+					if (!absPath.toLowerCase().endsWith(EXPORT_FILE_EXTENSION)) 
+						absPath += EXPORT_FILE_EXTENSION;
+					exportFile = absPath;
+					exportExplore = true;
+				}
+				else
+				{
+					exportExplore = false;
+					export.setSelected(false);
+				}
+	    	}
+	    	else // Deselect export requested
+	    	{
+	    		exportExplore = false;
+	    	}
 	    	
 	    // Clear requested
 	    } else if(CLEAR_STRING.equals(e.getActionCommand())){
@@ -225,14 +260,6 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	public boolean getExportExplore ()
 	{
 		return exportExplore; 
-	}
-	
-	/**
-	 * If true we desire to visualize the explore
-	 */
-	public boolean getVisualizeExplore()
-	{
-		return visualizeExplore;
 	}
 	
 	
@@ -262,7 +289,6 @@ public class ExploreWindow extends JFrame implements ActionListener {
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.add(radioButtons, BorderLayout.WEST);
         bottom.add(export, BorderLayout.EAST);
-        bottom.add(visualize, BorderLayout.WEST);
         
         pane.add(buttons, BorderLayout.NORTH);
         pane.add(areaScrollPane, BorderLayout.CENTER);
@@ -301,12 +327,6 @@ public class ExploreWindow extends JFrame implements ActionListener {
         export.setSelected(false);
         
         export.addActionListener(this);
-        
-        visualize = new JCheckBox("Visualize Explore");
-        visualize.setActionCommand(VISUALIZE_STRING);
-        visualize.setSelected(false);
-        
-        visualize.addActionListener(this);
 
         //Listen for actions on buttons 1 and 3.
         b1.addActionListener(this);

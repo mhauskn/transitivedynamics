@@ -17,8 +17,7 @@ import javax.vecmath.*; // Color3f
 public class Util {
 	
 	public static final char NEG_CHAR = '\u00AC';
-	
-	
+		
 	public static final int CAUSES 		= 0;
 	public static final int PREVENTS 	= 1;
 	public static final int HELPS 		= 2;
@@ -26,6 +25,12 @@ public class Util {
 	public static final int ALLOWS 		= 4;
 	public static final int INVALID		= 5;
 	
+	public static final String CAUSES_WORD 		= "Causes";
+	public static final String PREVENTS_WORD 	= "Prevent";
+	public static final String HELPS_WORD 		= "Helps";
+	public static final String DESPITE_WORD 	= "Despite";
+	public static final String ALLOWS_WORD 		= "Allows";
+	public static final String INVALID_WORD 	= "Invalid";
 	
 	/**
 	 * Defines colors which are used to represent the different
@@ -43,8 +48,15 @@ public class Util {
 		new Color3f (240/255f, 128/255f, 128/255f);
 	public static Color3f INVALID_COLOR = // Light Gray
 		new Color3f (211/255f, 211/255f, 211/255f);
+		
+	public static final Color3f WHITE  = new Color3f(1.0f, 1.0f, 1.0f);
+	public static final Color3f BLACK  = new Color3f(0.0f, 0.0f, 0.0f);
+	public static final Color3f GREY   = new Color3f(0.5f, 0.5f, 0.5f);
 	
-	public static final Color3f BLACK = new Color3f(0f,0f,0f);
+	
+	
+	
+//-------------------------METHODS--------------------------//
 	
 	/**
 	 * Returns the color associated with a verbnum or black if 
@@ -56,22 +68,61 @@ public class Util {
 	{
 		switch (verbNum)
 		{
-			case 0:
-				return CAUSES_COLOR;
-			case 1:
-				return PREVENTS_COLOR;
-			case 2:
-				return HELPS_COLOR;
-			case 3:
-				return DESPITE_COLOR;
-			case 4:
-				return ALLOWS_COLOR;
-			case 5:
-				return INVALID_COLOR;
+			case 0: return CAUSES_COLOR;
+			case 1: return PREVENTS_COLOR;
+			case 2: return HELPS_COLOR;
+			case 3: return DESPITE_COLOR;
+			case 4: return ALLOWS_COLOR;
+			case 5: return INVALID_COLOR;
 		}
 		return BLACK;
 	}
 	
+	public static void setVerbColor (int verbNum, Color newColor)
+	{
+		Color3f newColor3f = new Color3f(newColor.getRed()/255f,
+				newColor.getGreen()/255f, newColor.getBlue()/255f);
+		
+		setVerbColor(verbNum, newColor3f);
+	}
+	
+	public static void setVerbColor (int verbNum, Color3f newColor)
+	{
+		switch (verbNum)
+		{
+		case 0: CAUSES_COLOR = newColor; break;
+		case 1: PREVENTS_COLOR = newColor; break;
+		case 2: HELPS_COLOR = newColor; break;
+		case 3: DESPITE_COLOR = newColor; break;
+		case 4: ALLOWS_COLOR = newColor; break;
+		case 5: INVALID_COLOR = newColor; break;
+		}
+	}
+	
+	/**
+	 * Returns the 
+	 * @return
+	 */
+	public static int getVerbNum (String verb)
+	{
+		if (verb.equals(CAUSES_WORD)) {
+			return CAUSES;
+			
+		} else if (verb.equals(PREVENTS_WORD)) {
+			return PREVENTS;
+			
+		} else if (verb.equals(HELPS_WORD)) {
+			return HELPS;
+			
+		} else if (verb.equals(DESPITE_WORD)) {
+			return DESPITE;
+			
+		} else if (verb.equals(ALLOWS_WORD)) {
+			return ALLOWS;
+		}
+		return INVALID;
+	}
+		
 	/**
 	 * Interpret a given number of milliseconds
 	 * @param milli The given number of milliseconds

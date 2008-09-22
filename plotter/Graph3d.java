@@ -43,6 +43,8 @@ import javax.vecmath.*;
 
 import javax.swing.*;
 
+import util.Util;
+
 import java.util.ArrayList;
 
 
@@ -53,30 +55,37 @@ public class Graph3d extends JPanel {
 	private static final float DEF_DIST = 1.0f;
 	
 	// Number of gridlines between major axies
-	private int NUM_GRIDLINES = 5;
+	private int numGridlines = 5;
 	
-	// ArrayList to hold each of our datapoints
-	private ArrayList<Vector3d> dataPoints = new ArrayList<Vector3d>();
+	// Holds possible data points and conclusion verb types
+	private ArrayList<int[]> rawData = new ArrayList<int[]>();
 	
-	// ArrayList to hold the coloring of each verb
-	private ArrayList<Color3f> verbColors = new ArrayList<Color3f>();
+	/**
+	 * Holds an arrayList for each verbNumber. This is useful when 
+	 * we want to make only one verb transparent.
+	 */
+	private ArrayList<Sphere>[] spheres = (ArrayList<Sphere>[]) new ArrayList[6];
 	
+	private int xIndex;
+	private int yIndex;
+	private int zIndex;
+		
 	// Labels for each of our Axies
-	private String X_LABEL = "X-Axis";
-	private String Y_LABEL = "Y-Axis";
-	private String Z_LABEL = "Z-Axis";
+	private String xLabel = "X-Axis";
+	private String yLabel = "Y-Axis";
+	private String zLabel = "Z-Axis";
 	
 	// Min and max X Values
-	private double X_MIN = 0.0;
-	private double X_MAX = 1.0;
+	private double xMin = 0.0;
+	private double xMax = 1.0;
 	
 	// Min and max Y Values
-	private double Y_MIN = 0.0;
-	private double Y_MAX = 1.0;
+	private double yMin = 0.0;
+	private double yMax = 1.0;
 	
 	// Min and max Z Values
-	private double Z_MIN = 0.0;
-	private double Z_MAX = 1.0;
+	private double zMin = 0.0;
+	private double zMax = 1.0;
 	
 	private static final String LABEL_FONT = "Serif";
 	private static final int LABEL_FONT_SIZE = 24;
@@ -84,86 +93,73 @@ public class Graph3d extends JPanel {
 	private static final String TICK_FONT = "Helvetica";
 	private static final int TICK_FONT_SIZE = 12;
 	
-	private static final Color3f white  = new Color3f(1.0f, 1.0f, 1.0f);
-	private static final Color3f black  = new Color3f(0.0f, 0.0f, 0.0f);
-	private static final Color3f grey  = new Color3f(0.5f, 0.5f, 0.5f);
+	private static Color3f backgroundColor = Util.WHITE;
+	private static Color3f axisColor = Util.BLACK;
+	private static Color3f gridColor = Util.GREY;
 	
-	private static final Color3f BACKGROUND_COLOR = white;
-	private static final Color3f AXIS_COLOR = black;
-	private static final Color3f GRID_COLOR = grey;
+	private Canvas3D canvas3D;
+	private BranchGroup scene;
+	private SimpleUniverse simpleU;
+	private GraphicsConfiguration config;
+	
+	private Background background;
 
-
-    Appearance createPointAppearance ()
-    {
-    	Appearance points_appear = new Appearance();
-    	Material material = new Material();
-        //material.setDiffuseColor(0.0f, 0.0f, 1.0f);
-        material.setShininess(50.0f);
-        // make modifications to default material properties
-        points_appear.setMaterial(material);
-    	
-        ColoringAttributes points_coloring = new ColoringAttributes();
-        
-        points_coloring.setColor(1.0f, 0.0f, 0.0f);
-        points_appear.setColoringAttributes(points_coloring);
-        
-        PointAttributes points_points = new PointAttributes(10.0f, true);
-        points_appear.setPointAttributes(points_points);
-        
-        return points_appear;
-    }
-
-    //TODO: Remove duplicate graph function
     // Create a simple scene and attach it to the virtual universe
     public Graph3d () 
     {
+    	for (int i = 0; i < 6; i++)
+    		spheres[i] = new ArrayList<Sphere>();
+    	
     	//super("Explore Visualization");
     	
     	//setSize(512,512);
     	//this.setMinimumSize(new Dimension(500,500));
-    	setPreferredSize(new Dimension(512, 512));
+    	/*setPreferredSize(new Dimension(512, 512));
         setAlignmentX(LEFT_ALIGNMENT);
         this.setBorder(BorderFactory.createEtchedBorder());
 
     	
         setLayout(new BorderLayout());
-        GraphicsConfiguration config =
-           SimpleUniverse.getPreferredConfiguration();
+        config = SimpleUniverse.getPreferredConfiguration();
 
-        Canvas3D canvas3D = new Canvas3D(config);
+        canvas3D = new Canvas3D(config);
         //add("Center", canvas3D);
         //this.getContentPane().add(canvas3D);
         this.add(canvas3D);
         
-        BranchGroup scene = createSceneGraph();
+        scene = createSceneGraph();
 
         // SimpleUniverse is a Convenience Utility class
-        SimpleUniverse simpleU = new SimpleUniverse(canvas3D);
+        simpleU = new SimpleUniverse(canvas3D);
 
         // This will move the ViewPlatform back a bit so the
         // objects in the scene can be viewed.
         simpleU.getViewingPlatform().setNominalViewingTransform();
 
         simpleU.addBranchGraph(scene);
-        setVisible(true);
+        setVisible(true);*/
     }
     
+    
     public void graph ()
-    {
-    	setSize(512,512);
+    {  
+    	setPreferredSize(new Dimension(512, 512));
+        setAlignmentX(LEFT_ALIGNMENT);
+        this.setBorder(BorderFactory.createEtchedBorder());
+
     	
         setLayout(new BorderLayout());
-        GraphicsConfiguration config =
-           SimpleUniverse.getPreferredConfiguration();
+        config = SimpleUniverse.getPreferredConfiguration();
 
-        Canvas3D canvas3D = new Canvas3D(config);
+        canvas3D = new Canvas3D(config);
         //add("Center", canvas3D);
         //this.getContentPane().add(canvas3D);
+        this.add(canvas3D);
         
-        BranchGroup scene = createSceneGraph();
+        scene = createSceneGraph();
 
         // SimpleUniverse is a Convenience Utility class
-        SimpleUniverse simpleU = new SimpleUniverse(canvas3D);
+        simpleU = new SimpleUniverse(canvas3D);
 
         // This will move the ViewPlatform back a bit so the
         // objects in the scene can be viewed.
@@ -175,53 +171,123 @@ public class Graph3d extends JPanel {
     
     public void setXAxisName (String s)
     {
-    	X_LABEL = s;
+    	xLabel = s;
     }
     
     public void setYAxisName (String s)
     {
-    	Y_LABEL = s;
+    	yLabel = s;
     }
     
     public void setZAxisName (String s)
     {
-    	Z_LABEL = s;
+    	zLabel = s;
     }
     
     public void setNumGridlines (int n)
     {
-    	NUM_GRIDLINES = n;
+    	numGridlines = n;
     }
     
-    public void setXMinMax (double xMin, double xMax)
+    public void setXMinMax (double _xMin, double _xMax)
     {
-    	X_MIN = xMin;
-    	X_MAX = xMax;
+    	xMin = _xMin;
+    	xMax = _xMax;
     }
     
-    public void setYMinMax (double yMin, double yMax)
+    public void setYMinMax (double _yMin, double _yMax)
     {
-    	Y_MIN = yMin;
-    	Y_MAX = yMax;
+    	yMin = _yMin;
+    	yMax = _yMax;
     }
 
-    public void setZMinMax (double zMin, double zMax)
+    public void setZMinMax (double _zMin, double _zMax)
     {
-    	Z_MIN = zMin;
-    	Z_MAX = zMax;
+    	zMin = _zMin;
+    	zMax = _zMax;
+    }
+    
+    public void setEMagMinMax (int eMag)
+    {
+    	xMax = yMax = zMax = Math.abs(eMag);
+    	xMin = yMin = zMin = -Math.abs(eMag);
+    }
+    
+    public void setPoints (ArrayList<int[]> points)
+    {
+    	rawData = points;
     }
     
     /**
-     * Sets the graph3d's points equal to the specified points and also 
-     * colors the points according to the verb specification given.
-     * @param points
-     * @param verbs
+     * Sets indicies into the rawData array so that we know 
+     * where to look for the data in order to determine each axis.
+     * @param _xIndex
+     * @param _yIndex
+     * @param _zIndex
      */
-    public void setPoints (ArrayList<Vector3d> points, 
-    		ArrayList<Color3f> concVerbs)
+    public void setIndicies (int _xIndex, int _yIndex, int _zIndex)
     {
-    	dataPoints = points;
-    	verbColors = concVerbs;
+    	xIndex = _xIndex;
+    	yIndex = _yIndex;
+    	zIndex = _zIndex;
+    }
+    
+    public void toggleBackgroundColors ()
+    {
+    	if (backgroundColor == Util.WHITE)
+    	{
+    		backgroundColor = Util.BLACK;
+    		axisColor = Util.WHITE;
+    	}
+    	else if (backgroundColor == Util.BLACK)
+    	{
+    		backgroundColor = Util.WHITE;
+    		axisColor = Util.BLACK;
+    	}
+    }
+    
+    public GraphData exportGraphData ()
+    {
+    	GraphData gd = new GraphData();
+    	gd.numGridlines = numGridlines;
+    	gd.rawData = rawData;
+    	gd.xLabel = xLabel;
+    	gd.yLabel = yLabel;
+    	gd.zLabel = zLabel;
+    	gd.xIndex = xIndex;
+    	gd.yIndex = yIndex;
+    	gd.zIndex = zIndex;
+    	gd.xMin = xMin;
+    	gd.xMax = xMax;
+    	gd.yMin = yMin;
+    	gd.yMax = yMax;
+    	gd.zMin = zMin;
+    	gd.zMax = zMax;
+    	gd.backgroundColor = backgroundColor;
+    	gd.axisColor = axisColor;
+    	gd.gridColor = gridColor;
+    	return gd;
+    }
+    
+    public void importGraphData (GraphData gd)
+    {
+    	numGridlines = gd.numGridlines;
+    	rawData = gd.rawData;
+    	xLabel = gd.xLabel;
+    	yLabel = gd.yLabel;
+    	zLabel = gd.zLabel;
+    	xIndex = gd.xIndex;
+    	yIndex = gd.yIndex;
+    	zIndex = gd.zIndex;
+    	xMin = gd.xMin;
+    	xMax = gd.xMax;
+    	yMin = gd.yMin;
+    	yMax = gd.yMax;
+    	zMin = gd.zMin;
+    	zMax = gd.zMax;
+    	backgroundColor = gd.backgroundColor;
+    	axisColor = gd.axisColor;
+    	gridColor = gd.gridColor;
     }
     
 //---------------------PRIVATE METHODS-------------------------
@@ -252,13 +318,13 @@ public class Graph3d extends JPanel {
     	// Create background of specified color
     	BoundingSphere boundingSphere = 
             new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
-        Background background = 
-            new Background(BACKGROUND_COLOR);    
+        background = new Background(backgroundColor);
+        //background.setCapability(Background.ALLOW_COLOR_WRITE);
         background.setApplicationBounds(boundingSphere);
         objRotate.addChild(background);
 
     	
-    	addGridlines(objRotate, NUM_GRIDLINES); // Add the gridlines to the model.
+    	addGridlines(objRotate, numGridlines); // Add the gridlines to the model.
         
         addLabels(objRotate); // Add some axis labels to objRotate
         
@@ -302,13 +368,19 @@ public class Graph3d extends JPanel {
      */
     private Appearance createAppearance(Color3f diffuseColor) {
         Appearance appear = new Appearance();
+        //appear.setCapability(Appearance.ALLOW_TRANSPARENCY_ATTRIBUTES_WRITE);
         Material material = new Material();
-        
+        material.setCapability(Material.ALLOW_COMPONENT_WRITE);
         material.setDiffuseColor(diffuseColor);
         
         material.setShininess(50.0f);
         // make modifications to default material properties
         appear.setMaterial(material);
+        
+        TransparencyAttributes ta = new TransparencyAttributes(
+        		TransparencyAttributes.FASTEST, 0.0f);
+        ta.setCapability(TransparencyAttributes.ALLOW_VALUE_WRITE);
+        appear.setTransparencyAttributes(ta);
 
         //ColoringAttributes colorAtt = new ColoringAttributes();
         //colorAtt.setShadeModel(ColoringAttributes.SHADE_FLAT);
@@ -324,15 +396,68 @@ public class Graph3d extends JPanel {
      */
     private void addSpheres (TransformGroup t)
     {
-    	for (int i = 0; i < dataPoints.size(); i++)
+    	for (int i = 0; i < rawData.size(); i++)
     	{
+    		int[] tuple = rawData.get(i);
+    		
+    		double xTrans;
+    		double yTrans;
+    		double zTrans;
+    		
+    		if (xIndex == -1)
+    			xTrans = 0.0;
+    		else
+    			xTrans = (tuple[xIndex] - xMin) / ((double) (xMax - xMin));
+    		
+    		if (yIndex == -1)
+    			yTrans = 0.0;
+    		else
+    			yTrans = (tuple[yIndex] - yMin) / ((double) (yMax - yMin));
+    		
+    		if (zIndex == -1)
+    			zTrans = 0.0;
+    		else
+    			zTrans = (tuple[zIndex] - xMin) / ((double) (zMax - zMin));
+    		
+    		int verbNum = tuple[tuple.length-1];
+    		
     		Sphere s = new Sphere(0.01f, Sphere.GENERATE_NORMALS, 
-    				createAppearance(verbColors.get(i)));
+    				createAppearance(Util.getVerbColor(verbNum)));
+    		//s.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
     		Transform3D translate = new Transform3D();
-    		translate.setTranslation(dataPoints.get(i));
+    		translate.setTranslation(new Vector3d(xTrans, yTrans, zTrans));
     		TransformGroup tg = new TransformGroup(translate);
     		tg.addChild(s);
     		t.addChild(tg);
+    		//spheres.add(s);
+    		spheres[verbNum].add(s);
+    	}
+    }
+    
+    public void makeInvisible (int verbNum)
+    {
+    	ArrayList<Sphere> a = spheres[verbNum];
+    	for (Sphere s : a)	
+    	{
+    		s.getAppearance().getTransparencyAttributes().setTransparency(0.9f);
+    	}
+    }
+    
+    public void makeVisible (int verbNum)
+    {
+    	ArrayList<Sphere> a = spheres[verbNum];
+    	for (Sphere s : a)	
+    	{
+    		s.getAppearance().getTransparencyAttributes().setTransparency(0.0f);
+    	}
+    }
+    
+    public void changeColor (int verbNum)
+    {
+    	ArrayList<Sphere> a = spheres[verbNum];
+    	for (Sphere s : a)	
+    	{
+    		s.getAppearance().getMaterial().setDiffuseColor(Util.getVerbColor(verbNum));
     	}
     }
         
@@ -343,8 +468,9 @@ public class Graph3d extends JPanel {
     {
     	//-------------CREATE FIRST AXIS----------------------
         //Shape3D text2d = new Text2D("2D text in Java 3D", white, "Helvetica", 24, Font.PLAIN);
-        Shape3D text2d = new Text2D(X_LABEL, AXIS_COLOR, LABEL_FONT, 
+        Shape3D text2d = new Text2D(xLabel, axisColor, LABEL_FONT, 
         		LABEL_FONT_SIZE, Font.PLAIN);
+        text2d.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE);
         
         Appearance textAppear = text2d.getAppearance();
         
@@ -379,7 +505,7 @@ public class Graph3d extends JPanel {
         t.addChild(textTranslationGroup);
         
         //--------------CREATE SECOND AXIS--------------------------
-        text2d = new Text2D(Y_LABEL, AXIS_COLOR, LABEL_FONT, LABEL_FONT_SIZE, 
+        text2d = new Text2D(yLabel, axisColor, LABEL_FONT, LABEL_FONT_SIZE, 
         		Font.PLAIN);
         
         textAppear = text2d.getAppearance();
@@ -428,7 +554,7 @@ public class Graph3d extends JPanel {
         t.addChild(textTranslationGroup);
         
         //--------------Also 2nd AXIS---------------------------
-        text2d = new Text2D(Y_LABEL, AXIS_COLOR, LABEL_FONT, LABEL_FONT_SIZE, 
+        text2d = new Text2D(yLabel, axisColor, LABEL_FONT, LABEL_FONT_SIZE, 
         		Font.PLAIN);
         
         textAppear = text2d.getAppearance();
@@ -477,7 +603,7 @@ public class Graph3d extends JPanel {
         t.addChild(textTranslationGroup);
         
         //-----------------CREATE THIRD AXIS-----------------------
-        text2d = new Text2D(Z_LABEL, AXIS_COLOR, LABEL_FONT, LABEL_FONT_SIZE, 
+        text2d = new Text2D(zLabel, axisColor, LABEL_FONT, LABEL_FONT_SIZE, 
         		Font.PLAIN);
         
         textAppear = text2d.getAppearance();
@@ -518,18 +644,18 @@ public class Graph3d extends JPanel {
     	// Amount to increment by
     	float inc = DEF_DIST / numTicks;
     	
-    	double xInc = (X_MAX - X_MIN) / numTicks;
-    	double yInc = (Y_MAX - Y_MIN) / numTicks;
-    	double zInc = (Z_MAX - Z_MIN) / numTicks;
+    	double xInc = (xMax - xMin) / numTicks;
+    	double yInc = (yMax - yMin) / numTicks;
+    	double zInc = (zMax - zMin) / numTicks;
 
     	
     	for (int i = 0; i <= numTicks; i++)
     	{
     		//--------------ZAXIS TICKS--------------------
-    		double tickVal = zInc * i + Z_MIN;
+    		double tickVal = zInc * i + zMin;
     		String sVal = Double.toString(tickVal);
     		if (sVal.length() > 4) sVal = sVal.substring(0,5);
-    		Shape3D text2d = new Text2D(sVal, AXIS_COLOR, TICK_FONT, TICK_FONT_SIZE, Font.BOLD);
+    		Shape3D text2d = new Text2D(sVal, axisColor, TICK_FONT, TICK_FONT_SIZE, Font.BOLD);
             
             Appearance textAppear = text2d.getAppearance();
             
@@ -565,10 +691,10 @@ public class Graph3d extends JPanel {
             t.addChild(textTranslationGroup);
             
             //-----------------XAXIS TICKS---------------------
-            tickVal = xInc * i + X_MIN;
+            tickVal = xInc * i + xMin;
     		sVal = Double.toString(tickVal);
     		if (sVal.length() > 4) sVal = sVal.substring(0,5);
-    		text2d = new Text2D(sVal, AXIS_COLOR, TICK_FONT, TICK_FONT_SIZE, Font.BOLD);
+    		text2d = new Text2D(sVal, axisColor, TICK_FONT, TICK_FONT_SIZE, Font.BOLD);
             
             textAppear = text2d.getAppearance();
             
@@ -603,10 +729,10 @@ public class Graph3d extends JPanel {
             t.addChild(textTranslationGroup);
             
             //-------------YAXIS TICKS--------------------
-            tickVal = yInc * i + Y_MIN;
+            tickVal = yInc * i + yMin;
     		sVal = Double.toString(tickVal);
     		if (sVal.length() > 4) sVal = sVal.substring(0,5);
-    		text2d = new Text2D(sVal, AXIS_COLOR, TICK_FONT, TICK_FONT_SIZE, Font.BOLD);
+    		text2d = new Text2D(sVal, axisColor, TICK_FONT, TICK_FONT_SIZE, Font.BOLD);
             
     		textAppear = text2d.getAppearance();
             
@@ -654,10 +780,10 @@ public class Graph3d extends JPanel {
             t.addChild(textTranslationGroup);
             
             //-------------OTHER YAXIS TICKS--------------------
-            tickVal = yInc * i + Y_MIN;
+            tickVal = yInc * i + yMin;
     		sVal = Double.toString(tickVal);
     		if (sVal.length() > 4) sVal = sVal.substring(0,5);
-    		text2d = new Text2D(sVal, AXIS_COLOR, TICK_FONT, TICK_FONT_SIZE, Font.BOLD);
+    		text2d = new Text2D(sVal, axisColor, TICK_FONT, TICK_FONT_SIZE, Font.BOLD);
             
     		textAppear = text2d.getAppearance();
             
@@ -720,39 +846,39 @@ public class Graph3d extends JPanel {
         for (int i = 0; i < numLines + 1; i++)
         {
 	        LineArray a = createGridLine(new Point3f (inc * i, 0.0f, 0.0f),
-	        		new Point3f(inc * i, DEF_DIST, 0.0f), i == 0 || i == numLines ? AXIS_COLOR : GRID_COLOR);
+	        		new Point3f(inc * i, DEF_DIST, 0.0f), i == 0 || i == numLines ? axisColor : gridColor);
 	        t.addChild(new Shape3D(a));
 	        a = createGridLine(new Point3f (0.0f, 0.0f, inc*i),
-	        		new Point3f(0.0f, DEF_DIST, inc*i), i == 0 || i == numLines ? AXIS_COLOR : GRID_COLOR);
+	        		new Point3f(0.0f, DEF_DIST, inc*i), i == 0 || i == numLines ? axisColor : gridColor);
 	        t.addChild(new Shape3D(a));
 	        
 	        a = createGridLine(new Point3f (0.0f, inc*i, 0.0f),
-	        		new Point3f(DEF_DIST, inc*i, 0.0f), i == 0 || i == numLines ? AXIS_COLOR : GRID_COLOR);
+	        		new Point3f(DEF_DIST, inc*i, 0.0f), i == 0 || i == numLines ? axisColor : gridColor);
 	        t.addChild(new Shape3D(a));
 	        // Add sloped tick marks
 	        a = createGridLine(new Point3f (DEF_DIST, inc*i, 0.0f),
-	        		new Point3f(DEF_DIST+(DEF_DIST/30), inc*i, -(DEF_DIST/30)), AXIS_COLOR);
+	        		new Point3f(DEF_DIST+(DEF_DIST/30), inc*i, -(DEF_DIST/30)), axisColor);
 	        t.addChild(new Shape3D(a));
 	        a = createGridLine(new Point3f (0.0f, 0.0f, inc*i),
-	        		new Point3f(DEF_DIST, 0.0f, inc*i), i == 0 || i == numLines ? AXIS_COLOR : GRID_COLOR);
+	        		new Point3f(DEF_DIST, 0.0f, inc*i), i == 0 || i == numLines ? axisColor : gridColor);
 	        t.addChild(new Shape3D(a));
 	        // Add straight tick marks
 	        a = createGridLine(new Point3f (DEF_DIST, 0.0f, inc*i),
-	        		new Point3f(DEF_DIST+(DEF_DIST/25f), 0.0f, inc*i), AXIS_COLOR);
+	        		new Point3f(DEF_DIST+(DEF_DIST/25f), 0.0f, inc*i), axisColor);
 	        t.addChild(new Shape3D(a));
 	        
 	        a = createGridLine(new Point3f (inc * i, 0.0f, 0.0f),
-	        		new Point3f(inc * i, 0.0f, DEF_DIST), i == 0 || i == numLines ? AXIS_COLOR : GRID_COLOR);
+	        		new Point3f(inc * i, 0.0f, DEF_DIST), i == 0 || i == numLines ? axisColor : gridColor);
 	        t.addChild(new Shape3D(a));
 	        // Add straight tick marks
 	        a = createGridLine(new Point3f (inc * i, 0.0f, DEF_DIST),
-	        		new Point3f(inc * i, 0.0f, DEF_DIST+(DEF_DIST/25)), AXIS_COLOR);
+	        		new Point3f(inc * i, 0.0f, DEF_DIST+(DEF_DIST/25)), axisColor);
 	        t.addChild(new Shape3D(a));
 	        a = createGridLine(new Point3f (0.0f, inc*i, 0.0f),
-	        		new Point3f(0.0f, inc*i, DEF_DIST), i == 0 || i == numLines ? AXIS_COLOR : GRID_COLOR);
+	        		new Point3f(0.0f, inc*i, DEF_DIST), i == 0 || i == numLines ? axisColor : gridColor);
 	        t.addChild(new Shape3D(a));
 	        a = createGridLine(new Point3f (0.0f, inc*i, DEF_DIST),
-	        		new Point3f(-(DEF_DIST/30), inc*i, DEF_DIST+(DEF_DIST/30)), AXIS_COLOR);
+	        		new Point3f(-(DEF_DIST/30), inc*i, DEF_DIST+(DEF_DIST/30)), axisColor);
 	        t.addChild(new Shape3D(a));
         }
         

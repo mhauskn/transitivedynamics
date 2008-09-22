@@ -441,6 +441,43 @@ public class ContainerPanel extends JPanel {
 			panels[i].setWordMenu();
 	}
 	
+	/**
+	 * Returns an array of strings containing the names
+	 * of the affector and patient vectors for all panels
+	 * @return
+	 */
+	public String[] getVecNames ()
+	{
+		int numVecs = panels.length * 2 + 2;
+		String[] vecNames = new String[numVecs + 1];
+		int vecIndex = 0;
+		vecNames[vecIndex++] = "";
+		
+		for (int i = 0; i < panels.length; i++)
+		{
+			String affVec = panels[i].getAWord();
+			if (panels[i].getASubscript() != null)
+				affVec += " (" + panels[i].getASubscript() + ")";
+			String patVec = panels[i].getBWord();
+			if (panels[i].getBSubscript() != null)
+				patVec += " (" + panels[i].getBSubscript() + ")";
+			vecNames[vecIndex++] = affVec;
+			vecNames[vecIndex++] = patVec;
+		}
+		
+		String conclusionA = "conclusion " + conclusion.getAWord();
+		if (conclusion.getASubscript() != null)
+			conclusionA += " (" + conclusion.getASubscript() + ")";
+		String conclusionB = "conclusion " + conclusion.getBWord();
+		if (conclusion.getBSubscript() != null)
+			conclusionB += " (" + conclusion.getBSubscript() + ")";
+		
+		vecNames[vecIndex++] = conclusionA;
+		vecNames[vecIndex++] = conclusionB;
+		
+		return vecNames;
+	}
+	
 //---------------------------------------------------------------------------------------
 // 	PRIVATE METHODS
 	

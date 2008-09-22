@@ -8,14 +8,7 @@ import javax.swing.JMenuBar;
 import util.Util;
 import java.util.ArrayList;
 
-import plotter.Graph3d;
-import javax.vecmath.*; // Color3f, Vector3d
-
 public class Explorer {	
-	/**
-	 * The window to which we output results
-	 */
-	ExploreWindow exp;
 	
 	/**
 	 * Used to disable/enable our menus
@@ -27,34 +20,19 @@ public class Explorer {
 	/**
 	 * Write to logfile if true
 	 */
-	boolean export;
+	boolean export = false;
 	
 	/**
-	 * Visualize Explore if true
+	 * Data from accepted trials should be stored if this is true
 	 */
-	boolean visualize;
+	boolean retainData;
 	
 	/**
-	 * Contains the data given to the visualizer
+	 * Holds vector data from each accepted trial.
+	 * Data format is: 
+	 * [panel0.iA][panel0.iB]...[conc.iA][conc.iB][verbNum]
 	 */
-	ArrayList<int[]> visData = new ArrayList<int[]>();
-	
-	/**
-	 * Holds the 3d point for each of the accepted trails
-	 */
-	ArrayList<Vector3d> points = new ArrayList<Vector3d>();
-	
-	/**
-	 * Passed to the grapher to indicate which color the 
-	 * data point should be mapped as.
-	 */
-	ArrayList<Color3f> concVerbColor = new ArrayList<Color3f>();
-	
-	/**
-	 * Integers to indicate the max and min values
-	 * for each of our axies
-	 */
-	int xMin, xMax, yMin, yMax, zMin, zMax;
+	ArrayList<int[]> points = new ArrayList<int[]>();
 	
 	/**
 	 * Filename to export to
@@ -121,7 +99,7 @@ public class Explorer {
 	 * The length of panel zero's endstate vector.
 	 * Determines how long the explorer runs.
 	 */
-	int eZero;
+	public int eZero = -1;
 	
 	/**
 	 * Points to the hierVal of the vector which is currently being varied
@@ -195,23 +173,46 @@ public class Explorer {
 	 */
 	long timeStart;
 	
+	String timeTaken;
+	String timeRemaining;
+	
 	
 //---------------------------------------------------------------------------------------
 //	PUBLIC METHODS
 	
-	public Explorer (ContainerPanel cp, ExploreWindow expWin, 
-			JMenuBar JMenu)
+	/**
+	 * Creates a new Explorer. Explorer needs the container panel
+	 * in order to manipulate the model. It needs the MenuBar in order
+	 * to lock down the menus.
+	 */
+	public Explorer (ContainerPanel cp, JMenuBar JMenu)
 	{
 		cPanel = cp;
-		exp = expWin;
 		menu = JMenu;
 		
 		panels = cp.panels;
 		constrain = cp.constrain;
 		conclusion = cp.conclusion;
-		
-		export = expWin.getExportExplore();
-		visualize = expWin.getVisualizeExplore();
+	}
+	
+	/**
+	 * Set to true before starting explore if it is desired to
+	 * export the explore to a file.
+	 * @param exportExplore
+	 */
+	public void setExport (boolean exportExplore)
+	{
+		export = exportExplore;
+	}
+	
+	/**
+	 * Set to true before explore if it is desire that data be 
+	 * retained normally for the benefit of the grapher.
+	 * @param _retainData
+	 */
+	public void setRetainData (boolean _retainData)
+	{
+		retainData = _retainData;
 	}
 	
 
@@ -298,19 +299,22 @@ public class Explorer {
 			}
 		}
 		
-		String elapsed = Util.parseTime(System.currentTimeMillis() - timeStart);
-		
-		exp.update(numCauses, numAllows, numHelps, numPrevents, numDespites, numInvalids, num_accepted, 
-				attempts, elapsed, premises, overallAffector, overallPatient, eZero);
-		exp.repaint();
+		timeTaken = Util.parseTime(System.currentTimeMillis() - timeStart);
 		
 		unlockRestore();
 		
 		if (export) 
 			output.close();
-		
-		if (visualize)
-			visualize();
+	}
+	
+	public ArrayList<int[]> getRawData ()
+	{
+		return points;
+	}
+	
+	public void setEMag (int eMag)
+	{
+		eZero = eMag;
 	}
 	
 //---------------------------------------------------------------------------------------
@@ -425,7 +429,9 @@ public class Explorer {
 		
 		int totalFree = 2 * total - totalLocked;
 		
-		eZero = Math.abs(panels[0].iE);
+		if (eZero == -1)
+			eZero = Math.abs(panels[0].iE);
+		
 		predictedAttempts = Math.pow(eZero+1,totalFree);
 	}
 	
@@ -485,9 +491,8 @@ public class Explorer {
 			long elapsed = System.currentTimeMillis() - timeStart;
 			long remaining = 0;
 			if (aPercDone > 0) remaining = (100 - aPercDone) * (elapsed / aPercDone);
-			String taken = Util.parseTime(elapsed);
-			String remain = Util.parseTime(remaining);
-			exp.update(aPercDone, taken, remain);
+			timeTaken = Util.parseTime(elapsed);
+			timeRemaining = Util.parseTime(remaining);
 			oldPercDone = aPercDone;
 		}
 	}
@@ -526,27 +531,21 @@ public class Explorer {
 			conclusion.update();
 			if(conclusion.verb.equals("Causes")) {
 				numCauses++;
-				concVerbColor.add(Util.CAUSES_COLOR);
 			}
 			else if(conclusion.verb.equals("Allows")) { 
 				numAllows++;
-				concVerbColor.add(Util.ALLOWS_COLOR);
 			}
 			else if(conclusion.verb.equals("Helps")) {
 				numHelps++;
-				concVerbColor.add(Util.HELPS_COLOR);
 			}
 			else if(conclusion.verb.equals("Prevents")) {
 				numPrevents++;
-				concVerbColor.add(Util.PREVENTS_COLOR);
 			}
 			else if(conclusion.verb.equals("Despite")) {
 				numDespites++;
-				concVerbColor.add(Util.DESPITE_COLOR);
 			}
 			else if(conclusion.verb.equals("Invalid")) {
 				numInvalids++;
-				concVerbColor.add(Util.INVALID_COLOR);
 			}
 			num_accepted++;
 		}
@@ -559,13 +558,21 @@ public class Explorer {
 		}
 		
 		// Create a point for graph3d to display
-		if (visualize && accepted) {
-			Vector3d v = new Vector3d(
-					(panels[0].iA + eZero)/((double)(2*eZero)),
-					(panels[0].iB + eZero)/((double)(2*eZero)), 
-					(panels[1].iB + eZero)/((double)(2*eZero)));
+		if (retainData && accepted) {
+			int[] tuple = new int[total * 2 + 3];
+			int tupleIndex = 0;
 			
-			points.add(v);
+			for (int i = 0; i < total; i++)			
+			{
+				tuple[tupleIndex++] = panels[i].iA;
+				tuple[tupleIndex++] = panels[i].iB;
+			}
+			tuple[tupleIndex++] = conclusion.iA;
+			tuple[tupleIndex++] = conclusion.iB;
+			
+			tuple[tupleIndex++] = Util.getVerbNum(conclusion.verb);
+			
+			points.add(tuple);
 		}
 	}
 	
@@ -582,25 +589,6 @@ public class Explorer {
 		}
 		cPanel.update();
 		menu.setEnabled(true);
-	}
-	
-	/**
-	 * Creates a new graph3d object to visualize the
-	 * explore results
-	 */
-	private void visualize ()
-	{
-		Graph3d g = new Graph3d();
-		g.setXAxisName(panels[0].aWord);
-		g.setYAxisName(panels[0].bWord);
-		g.setZAxisName(panels[1].bWord);
-		
-		g.setXMinMax(-eZero, eZero);
-		g.setYMinMax(-eZero, eZero);
-		g.setZMinMax(-eZero, eZero);
-		
-		g.setPoints(points, concVerbColor);
-
-		g.graph();
+		aPercDone = 100;
 	}
 }
