@@ -5,8 +5,6 @@ import io.ModelIO;
 
 import java.awt.*;
 
-import util.Util;
-
 /**
  * The ArrowPanel is an interactive panel with GUI arrows to interact with
  * 

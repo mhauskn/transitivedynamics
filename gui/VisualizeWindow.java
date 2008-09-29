@@ -1,11 +1,8 @@
 package gui;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
-import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 
 import java.awt.Container;
 import java.awt.Dimension;
@@ -31,8 +28,8 @@ public class VisualizeWindow extends JFrame implements ActionListener
 	private ContainerPanel cPanel;
 	
 	private Container pane;
-	
-	private JPanel mainPane;
+		
+	private JSplitPane splitPane;
 	
 	private Graph3d g;
 	
@@ -59,30 +56,20 @@ public class VisualizeWindow extends JFrame implements ActionListener
 	 */
 	private void initializeGUI(int x, int y) {
 		pane = getContentPane();
-		setLocation(x,y);
-		
-		mainPane = new JPanel();
-        mainPane.setLayout(new BoxLayout(mainPane, BoxLayout.LINE_AXIS));
-        
-        mainPane.setBorder(BorderFactory.createEmptyBorder(1,1,1,1));
-        //mainPane.setBorder(BorderFactory.createEtchedBorder());//(1,1,1,1));
-       	//mainPane.add(Box.createRigidArea(new Dimension(0, 5)));
-		
+		setLocation(x,y);        
+
 		g = new Graph3d();
 		g.graph();
 		
-		mainPane.add(g);
-		
-		// Add separator between graph and controls
-		mainPane.add(Box.createRigidArea(new Dimension(5, super.getHeight())));
-		
-		//mainPane.add(createPlotterOptions());
 		options = new GraphOptions(cPanel, g, menuBar, this);
-		mainPane.add(options);
 		
-		mainPane.add(Box.createGlue());
-				
-		pane.add(mainPane);
+		splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+				g, options);
+		splitPane.setOneTouchExpandable(true);
+		splitPane.setDividerLocation(512);
+		splitPane.setPreferredSize(new Dimension(768,512));
+		
+		pane.add(splitPane);
 		
 		pack();
 		setVisible(true);
@@ -96,14 +83,16 @@ public class VisualizeWindow extends JFrame implements ActionListener
 	 */
 	public void resetGraph ()
 	{
+		int dividerLoc =  splitPane.getDividerLocation();
 		GraphData gd = g.exportGraphData();
-		mainPane.remove(0);
+		splitPane.remove(g);
 		
 		Graph3d g2 = new Graph3d();
 		g2.importGraphData(gd);
 		g2.graph();
-		
-		mainPane.add(g2, 0);
+
+		splitPane.setLeftComponent(g2);
+		splitPane.setDividerLocation(dividerLoc);
 		
 		g = g2;
 		options.setGraph(g);
