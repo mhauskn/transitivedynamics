@@ -152,7 +152,7 @@ public class ExploreWindow extends JFrame implements ActionListener {
 		public void run() {
 			try 
 			{
-				while (explorer.aPercDone != 100)
+				while (explorer.aPercDone != 100 && exploring)
 				{
 					expw.update(explorer.aPercDone, explorer.timeTaken, 
 							explorer.timeRemaining);
@@ -365,9 +365,9 @@ public class ExploreWindow extends JFrame implements ActionListener {
 	 */
 	private void startExplore ()
 	{
+		exploring = true;
+		setTitle("[0%]");
 		new exploreThread(this);
-    	setTitle("[0%]");
-    	exploring = true;
     	b1.setText("Stop Explore");
 	}
 	

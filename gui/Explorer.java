@@ -586,6 +586,9 @@ public class Explorer {
 			panels[i].setLockDown(false);
 			panels[i].iA = hierInitVals[2*i];
 			panels[i].iB = hierInitVals[2*i + 1];
+			panels[i].verb = words[i];
+			panels[i].rALocked = hierLocked[2*i];
+			panels[i].rBLocked = hierLocked[2*i+1];
 		}
 		cPanel.update();
 		cPanel.repaintAll();

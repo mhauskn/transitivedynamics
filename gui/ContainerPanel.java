@@ -234,7 +234,7 @@ public class ContainerPanel extends JPanel {
 			panels[i].repaint();
 		
 		if (showConstraints)
-			for (int i = 0; i < panels.length; i++)
+			for (int i = 0; i < panels.length - 1; i++)
 				constrain[i].repaint();
 		
 		conclusion.repaint();
