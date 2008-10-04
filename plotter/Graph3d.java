@@ -101,6 +101,7 @@ public class Graph3d extends JPanel {
 	private BranchGroup scene;
 	private SimpleUniverse simpleU;
 	private GraphicsConfiguration config;
+	private BranchGroup objRoot;
 	
 	private Background background;
 
@@ -297,7 +298,7 @@ public class Graph3d extends JPanel {
      */
     private BranchGroup createSceneGraph() {
     	// Create the root of the branch graph
-    	BranchGroup objRoot = new BranchGroup();
+    	objRoot = new BranchGroup();
 
         TransformGroup objTransform = new TransformGroup();
         objTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
@@ -358,7 +359,7 @@ public class Graph3d extends JPanel {
         objRoot.addChild(myMouseZoom);
 
         // Let Java 3D perform optimizations on this scene graph.
-        objRoot.compile();
+        //objRoot.compile();
 
         return objRoot;
     }

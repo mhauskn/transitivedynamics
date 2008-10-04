@@ -588,6 +588,7 @@ public class Explorer {
 			panels[i].iB = hierInitVals[2*i + 1];
 		}
 		cPanel.update();
+		cPanel.repaintAll();
 		menu.setEnabled(true);
 		aPercDone = 100;
 	}

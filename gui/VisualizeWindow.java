@@ -93,7 +93,7 @@ public class VisualizeWindow extends JFrame implements ActionListener
 
 		splitPane.setLeftComponent(g2);
 		splitPane.setDividerLocation(dividerLoc);
-		
+						
 		g = g2;
 		options.setGraph(g);
 

@@ -5,6 +5,8 @@ import gui.Explorer;
 import gui.VisualizeWindow;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import util.Util;
 
@@ -19,7 +21,8 @@ import java.io.IOException;
  * @author el
  *
  */
-public class GraphOptions extends JPanel implements ActionListener, FocusListener
+public class GraphOptions extends JPanel implements ActionListener, 
+	FocusListener, ChangeListener
 {
 	private static final long serialVersionUID = -4765988404040163814L;
 	
@@ -59,6 +62,7 @@ public class GraphOptions extends JPanel implements ActionListener, FocusListene
 	private JComboBox zCombo;
 	
 	JSlider densitySlider;
+	JLabel densityLabel;
 	
 	private static final int DEN_MIN = 0;
 	private static final int DEN_MAX = 100;
@@ -199,6 +203,15 @@ public class GraphOptions extends JPanel implements ActionListener, FocusListene
 	}
 	
 	public void focusLost (FocusEvent e) {}
+	
+	public void stateChanged (ChangeEvent e)
+	{
+		JSlider source = (JSlider)e.getSource();
+		if (!source.getValueIsAdjusting())
+		{
+			densityLabel.setText("Density   E-Mag:   " + getEMagFromSlider());
+		}
+	}
 		
 	public void updateColorKey ()
 	{
@@ -247,12 +260,15 @@ public class GraphOptions extends JPanel implements ActionListener, FocusListene
 		
 		densitySlider = new JSlider(JSlider.HORIZONTAL,
 				DEN_MIN, DEN_MAX, DEN_INIT);
+		densitySlider.addChangeListener(this);
+		
+		densityLabel = new JLabel("Density   E-Mag:   " + getEMagFromSlider());
 		
 		modelPane.add(vizButton);
 		modelPane.add(Box.createRigidArea(new Dimension(10,10)));
 		modelPane.add(toggleButton);
 		modelPane.add(Box.createRigidArea(new Dimension(10,10)));
-		modelPane.add(new JLabel("Density of Model", JLabel.CENTER));
+		modelPane.add(densityLabel);
 		modelPane.add(densitySlider);
 		
 		return modelPane;
