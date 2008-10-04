@@ -20,7 +20,7 @@ public class TransativeWindow implements ActionListener, ItemListener {
 	/**
 	 * The title of the current application.
 	 */
-	public static final String APP_TITLE = "Transative Dynamics Modeler";
+	public static final String APP_TITLE = "Force Composition Model";
 	
 	/**
 	 * The version of the current application.
