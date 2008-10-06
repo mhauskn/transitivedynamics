@@ -3,8 +3,6 @@ package plotter;
 import java.util.ArrayList;
 import javax.vecmath.Color3f;
 
-import com.sun.j3d.utils.geometry.Sphere;
-
 import util.Util;
 
 /**

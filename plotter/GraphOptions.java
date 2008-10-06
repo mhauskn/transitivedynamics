@@ -212,6 +212,11 @@ public class GraphOptions extends JPanel implements ActionListener,
 			densityLabel.setText("Density   E-Mag:   " + getEMagFromSlider());
 		}
 	}
+	
+	public void removeGraph ()
+	{
+		graph = null;
+	}
 		
 	public void updateColorKey ()
 	{

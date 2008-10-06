@@ -97,20 +97,19 @@ public class Graph3d extends JPanel {
 	private static Color3f axisColor = Util.BLACK;
 	private static Color3f gridColor = Util.GREY;
 	
-	private Canvas3D canvas3D;
-	private BranchGroup scene;
-	private SimpleUniverse simpleU;
-	private GraphicsConfiguration config;
-	private BranchGroup objRoot;
+	Canvas3D canvas3D;
+	BranchGroup scene;
+	SimpleUniverse simpleU;
+	BranchGroup objRoot;
+	TransformGroup objTransform;
+	TransformGroup objRotate;
 	
-	private Background background;
-
     // Create a simple scene and attach it to the virtual universe
     public Graph3d () 
     {
     	for (int i = 0; i < 6; i++)
     		spheres[i] = new ArrayList<Sphere>();
-    	
+    	    	
     	//super("Explore Visualization");
     	
     	//setSize(512,512);
@@ -150,7 +149,7 @@ public class Graph3d extends JPanel {
 
     	
         setLayout(new BorderLayout());
-        config = SimpleUniverse.getPreferredConfiguration();
+        GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
 
         canvas3D = new Canvas3D(config);
         //add("Center", canvas3D);
@@ -168,6 +167,18 @@ public class Graph3d extends JPanel {
 
         simpleU.addBranchGraph(scene);
         setVisible(true);
+    }
+    
+    public void cleanMemRef ()
+    {
+    	simpleU.cleanup();
+    	spheres = null;
+    	canvas3D = null;
+    	scene = null;
+    	simpleU = null;
+    	objRoot = null;
+    	objTransform = null;
+    	objRotate = null;
     }
     
     public void setXAxisName (String s)
@@ -300,7 +311,7 @@ public class Graph3d extends JPanel {
     	// Create the root of the branch graph
     	objRoot = new BranchGroup();
 
-        TransformGroup objTransform = new TransformGroup();
+        objTransform = new TransformGroup();
         objTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         objTransform.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
         
@@ -313,13 +324,13 @@ public class Graph3d extends JPanel {
     	tempRotate.rotY(-Math.PI/4.0d);
         rotate.mul(tempRotate);
         rotate.mul(translate);
-    	TransformGroup objRotate = new TransformGroup(rotate);
+    	objRotate = new TransformGroup(rotate);
     	objTransform.addChild(objRotate);
     	
     	// Create background of specified color
     	BoundingSphere boundingSphere = 
             new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
-        background = new Background(backgroundColor);
+    	Background background = new Background(backgroundColor);
         //background.setCapability(Background.ALLOW_COLOR_WRITE);
         background.setApplicationBounds(boundingSphere);
         objRotate.addChild(background);

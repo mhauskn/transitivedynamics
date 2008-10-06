@@ -3,6 +3,7 @@ package gui;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JSplitPane;
+import javax.swing.WindowConstants;
 
 import java.awt.Container;
 import java.awt.Dimension;
@@ -12,7 +13,8 @@ import plotter.Graph3d;
 import plotter.GraphData;
 import plotter.GraphOptions;
 
-public class VisualizeWindow extends JFrame implements ActionListener 
+public class VisualizeWindow extends JFrame implements ActionListener,
+	WindowListener
 {	
 	private static final long serialVersionUID = -4113871651262388325L;
 
@@ -26,9 +28,7 @@ public class VisualizeWindow extends JFrame implements ActionListener
 	 * The main Container Panel holding the panels
 	 */
 	private ContainerPanel cPanel;
-	
-	private Container pane;
-		
+			
 	private JSplitPane splitPane;
 	
 	private Graph3d g;
@@ -55,7 +55,9 @@ public class VisualizeWindow extends JFrame implements ActionListener
 	 * Sets up and initializes the window.
 	 */
 	private void initializeGUI(int x, int y) {
-		pane = getContentPane();
+		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		this.addWindowListener(this);
+		Container pane = getContentPane();
 		setLocation(x,y);        
 
 		g = new Graph3d();
@@ -70,7 +72,6 @@ public class VisualizeWindow extends JFrame implements ActionListener
 		splitPane.setPreferredSize(new Dimension(768,512));
 		
 		pane.add(splitPane);
-		
 		pack();
 		setVisible(true);
 	}
@@ -85,20 +86,57 @@ public class VisualizeWindow extends JFrame implements ActionListener
 	{
 		int dividerLoc =  splitPane.getDividerLocation();
 		GraphData gd = g.exportGraphData();
-		splitPane.remove(g);
+		cleanGraphRef();
 		
-		Graph3d g2 = new Graph3d();
-		g2.importGraphData(gd);
-		g2.graph();
+		g = new Graph3d();
+		g.importGraphData(gd);
+		g.graph();
 
-		splitPane.setLeftComponent(g2);
+		splitPane.setLeftComponent(g);
 		splitPane.setDividerLocation(dividerLoc);
 						
-		g = g2;
 		options.setGraph(g);
 
 		setVisible(true);
 	}
+	
+	/**
+	 * Removes all references to our Graph3d Object
+	 */
+	private void cleanGraphRef ()
+	{
+		g.cleanMemRef();
+		g.removeAll();
+		options.removeGraph();
+		splitPane.remove(g);
+		g = null;
+	}
+
+	@Override
+	public void windowActivated(WindowEvent arg0) {}
+
+	@Override
+	public void windowClosed(WindowEvent arg0) {}
+
+	@Override
+	public void windowClosing(WindowEvent arg0) {
+		cleanGraphRef();
+		splitPane.removeAll();
+		options.removeAll();
+		this.getContentPane().removeAll();
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent arg0) {}
+
+	@Override
+	public void windowDeiconified(WindowEvent arg0) {}
+
+	@Override
+	public void windowIconified(WindowEvent arg0) {}
+
+	@Override
+	public void windowOpened(WindowEvent arg0) {}
 	
 	public Graph3d getGraph ()
 	{
