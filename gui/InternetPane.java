@@ -3,6 +3,10 @@ package gui;
 import java.awt.*;
 import javax.swing.JEditorPane;
 
+/**
+ * Used with the Help window.
+ *
+ */
 public class InternetPane extends JEditorPane {
 	private static final long serialVersionUID = -7110776245407164749L;
 	

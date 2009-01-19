@@ -6,6 +6,9 @@ import java.awt.Color;
 import java.awt.GridLayout;
 //import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+import java.util.ArrayList;
+import java.util.Hashtable;
+
 import util.Util;
 
 
@@ -15,11 +18,6 @@ import javax.swing.JPanel;
 public class ContainerPanel extends JPanel {
 	
 	private static final long serialVersionUID = 9181592230994808685L;
-		
-	public static final int OR_RULESET = 0;
-	public static final int ADD_RULESET = 1;
-	public static final int AVG_RULESET = 2;
-	public static final int HYBRID_RULESET = 3;
 		
 	protected boolean continueExplore = true;
 	
@@ -138,8 +136,6 @@ public class ContainerPanel extends JPanel {
 			setPanel(i, Util.CAUSES);
 		}
 				
-		resetMenus();
-		
 		updateUI();
 	}
 	
@@ -190,6 +186,7 @@ public class ContainerPanel extends JPanel {
 		for(int i=0; i<panels.length; i++) {
 			InteractivePanel tmp = panels[i];
 		
+			//tmp.updateValues(); //TODO: This is experimental and maybe bad!
 			tmp.setA(getBestA(tmp));
 			tmp.setB(getBestB(tmp));
 			lockNeededVecs(tmp);
@@ -265,6 +262,70 @@ public class ContainerPanel extends JPanel {
 	public void setShowConstrain(boolean constrain) {
 		showConstraints = constrain;
 		reDrawModel();
+	}
+	
+	public Hashtable<String,panelConfig> explorePanelPossibilities (int panelNum) {
+		Hashtable<String,panelConfig> configs = new Hashtable<String,panelConfig>();
+		updateLast();
+		
+		InteractivePanel panel = panels[panelNum];
+		
+		varyPanel(panel, configs);
+		panel.iE *= -1;
+		varyPanel(panel, configs);
+		
+		restoreLast();
+		return configs;
+	}
+	
+	/**
+	 * Varies the vectors inside of the given panel
+	 * @param panel
+	 */
+	void varyPanel (InteractivePanel panel, Hashtable<String,panelConfig> relns) {
+		int increment = panel.iE > 0 ? -1 : 1;
+		int max_variance = panel.iE * -1;
+		
+		for (int amag = panel.iE; amag != max_variance; amag += increment) {
+			for (int bmag = panel.iE; bmag != max_variance; bmag += increment) {
+				panel.setA(amag);
+				panel.setB(bmag);
+				panel.updateValues();
+				if (consistent())
+					if (!relns.containsKey(panel.getVerb()))
+							relns.put(panel.getVerb(), new panelConfig(panel));
+			}
+		}
+	}
+	
+	class panelConfig {
+		int iA; int iB; int iR; int iE; String verb;
+		
+		public panelConfig (Panel p) {
+			iA = p.iA;
+			iB = p.iB;
+			iR = p.iR;
+			iE = p.iE;
+			verb = p.verb;
+		}
+		
+		void restore (Panel p) {
+			p.iA = iA;
+			p.iB = iB;
+			p.iR = iR;
+			p.iE = iE;
+			p.verb = verb;
+		}
+	}
+	
+	/**
+	 * Sets the specified panel to the specified relation.
+	 */
+	public void setPanel (int panelNum, String desiredReln, Hashtable<String,panelConfig> ht) {
+		if (!ht.containsKey(desiredReln))
+			return;
+		ht.get(desiredReln).restore(panels[panelNum]);
+		update();
 	}
 	
 	/**
@@ -370,75 +431,6 @@ public class ContainerPanel extends JPanel {
 		panels[num].repaint();
 		
 		return true;
-	}
-
-/*
-	public boolean canPanel(int num, int value) {
-		if (panels == null) return false;
-		
-		int startA = panels[num].iA;
-		int startB = panels[num].iB;
-		int startE = panels[num].iE;
-		
-		int eWidth = (panels.length * 50) + 50;
-		if (eWidth > 500) eWidth = 500;
-		
-		String verb = "Causes";
-		if (value == HELPS) verb = "Helps";
-		if (value == PREVENTS) verb = "Prevents";
-		if (value == DESPITE) verb = "Despite";
-		
-		// The first panel can be anything
-		if (num == 0) {
-			return true;
-			
-		// Anything else, we have to base it off of the existing value (if possible)
-		} else {
-			int dir = (panels[num].iA >= 0) ? 1 : -1;
-			if (panels[num].aNegated) dir = -dir;
-			
-			// Setup the e value
-			if (panels[num].eNegated) {
-				if (value == CAUSES || value == HELPS)
-					panels[num].iE = -dir * eWidth;
-				else
-					panels[num].iE = dir * eWidth;
-				
-			} else {
-				if (value == CAUSES || value == HELPS)
-					panels[num].iE = dir * eWidth;
-				else
-					panels[num].iE = -dir * eWidth;
-			}
-				
-			
-			// Move B till the premise is found
-			panels[num].iB = -eWidth;
-			//panels[num].update();
-			update();
-			while (!panels[num].verb.equals(verb) && panels[num].iB <= eWidth) {
-				panels[num].iB++;
-				//panels[num].update();
-				update();
-			}
-			
-			String saved = panels[num].verb;
-			
-			panels[num].iE = startE;
-			panels[num].iA = startA;
-			panels[num].iB = startB;
-			//panels[num].update();
-			update();
-			panels[num].repaint();
-			
-			if (saved.equals(verb)) return true;
-			return false;
-		}
-	}*/
-	
-	public void resetMenus() {
-		for (int i = 0; i < panels.length; i++)
-			panels[i].setWordMenu();
 	}
 	
 	/**

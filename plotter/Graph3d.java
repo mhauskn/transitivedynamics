@@ -48,6 +48,7 @@ import util.Util;
 import java.util.ArrayList;
 
 
+@SuppressWarnings("unchecked")
 public class Graph3d extends JPanel { 
 	
 	private static final long serialVersionUID = 1L;

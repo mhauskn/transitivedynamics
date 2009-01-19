@@ -1,7 +1,12 @@
 package gui;
 
+import gui.ContainerPanel.panelConfig;
+
 import java.awt.Font;
 import java.awt.event.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+
 import javax.swing.*;
 
 import util.Util;
@@ -20,7 +25,7 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
 	 * Serial identifier for version management.
 	 */
 	private static final long serialVersionUID = 4392977638167296058L;
-	
+		
 	/**
 	 * Declaration for no button currently being pressed.
 	 */
@@ -120,6 +125,8 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
 	
 	public ConstrainPanel myConstrainBelow;
 	
+	public Hashtable<String, panelConfig> possible_configs;
+	
 	
 	
 //---------------------------------------------------------------------------------------
@@ -141,10 +148,6 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
 		
 		id = myid;
 		holding = cp;
-		//panels = cp.panels;
-		//constrain = cp.constrain;
-		//conclusion = cp.conclusion;
-		//lastGood = cp.lastGood;
 		
 		addMouseMotionListener(this);
         addMouseListener(this);
@@ -159,10 +162,6 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
 		
 		initializeMenus();
 	}
-	
-	/*public void setConclusion(ConclusionPanel conc) {
-		conclusion = conc;
-	}*/
 	
 	
 //---------------------------------------------------------------------------------------
@@ -219,8 +218,11 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
 		lockDown = lock;
 	}
 	
-	public boolean getLockDown()
-	{
+	/**
+	 * Returns whether this panel is currently locked down.
+	 * @return
+	 */
+	public boolean getLockDown() {
 		return lockDown;
 	}
 	
@@ -368,6 +370,10 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
 		
         String source = ((JMenuItem)(e.getSource())).getText();
         
+        for (String reln : Util.WORDS)
+        	if (source.equals(reln))
+        		holding.setPanel(id, reln, possible_configs);
+        
         if (source.equals("Negate")) {
         	if (mouseButton == MOUSE_A) {
         		setANegated(!getANegated());
@@ -380,7 +386,6 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
         	repaint();
         	
         	updateValues();
-        	holding.resetMenus();
         	
         } else if (source.equals("Reset")) {
         	if (mouseButton == MOUSE_A) { setA(110); setANegated(false); }
@@ -392,7 +397,6 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
         	repaint();
         	
         	updateValues();
-        	holding.resetMenus();
         	
         } else if (source.equals("Relabel")) {
         	if (mouseButton == MOUSE_A) {
@@ -418,23 +422,6 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
         	}
         	
         	repaintAll();
-        	
-        	
-        } else if (source.equals("Causes")) {
-        	holding.setPanel(id, Util.CAUSES);
-        	holding.resetMenus();
-        	
-        } else if (source.equals("Helps")) {
-        	holding.setPanel(id, Util.HELPS);
-        	holding.resetMenus();
-        	
-        } else if (source.equals("Prevents")) { //Should not ever be used as is disabled currently!
-        	holding.setPanel(id, Util.PREVENTS);
-        	holding.resetMenus();
-        	
-        } else if (source.equals("Despite")) {
-        	holding.setPanel(id, Util.DESPITE);
-        	holding.resetMenus();
         
         } else if (source.equals("Self-Target")) {
         	if(displacedWord.equals("")) {
@@ -476,10 +463,34 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
         		if(holding.conclusion.getAWord().indexOf(NEG_CHAR) == -1) reExpressed = true;
         		else reExpressed = false;
         	} 
-        }
+        } 
         
         holding.repaintAll();
     }
+	
+	/**
+	 * Sets the menu when a relation is right-clicked. This includes
+	 * the possible relations that it can be switched to.
+	 */
+	public void setWordMenu() {
+		wordPopup.removeAll();
+		//for (String reln : Util.WORDS)
+		//	addWord(reln);
+		
+		possible_configs = holding.explorePanelPossibilities(id);
+		Enumeration<String> e = possible_configs.keys();
+		while (e.hasMoreElements())
+			addWord(e.nextElement());
+		
+		wordPopup.addSeparator();
+		
+		wordPopup.add(getMenu("Self-Target", true));
+		
+		if (parent == null && (verb.equals("Prevents") || (verb.equals("Causes") && eNegated)) 
+				&& child != null && (child.verb.equals("Prevents") || (child.verb.equals("Causes") && child.eNegated))) 
+			wordPopup.add(getMenu("ReExpress", true));
+		else wordPopup.add(getMenu("ReExpress", false));
+	}
 	
 	public void mouseMoved(MouseEvent event) {}
 	public void mouseClicked(MouseEvent event) {}
@@ -539,46 +550,14 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
 		ePopup.add(getMenu("Reset", true));
 	}
 	
-	public void setWordMenu() {
-		wordPopup.removeAll();
-		//TODO: Investigate why the canPanel call was going into an infinte loop and see if we can use it
-		//if (holding.canPanel(id, ContainerPanel.CAUSES) && !verb.equals("Causes")) wordPopup.add(getMenu("Causes", true));
-		if(!verb.equals("Causes")) wordPopup.add(getMenu("Causes", true));
-		else wordPopup.add(getMenu("Causes", false));
-		
-		//if (holding.canPanel(id, ContainerPanel.HELPS) && !verb.equals("Helps")) wordPopup.add(getMenu("Helps", true));
-		if(!verb.equals("Helps")) wordPopup.add(getMenu("Helps", true));
-		else wordPopup.add(getMenu("Helps", false));
-		
-		//TODO: Re-implement the Prevents choice
-		//if (holding.canPanel(id, ContainerPanel.PREVENTS) && !verb.equals("Prevents")) wordPopup.add(getMenu("Prevents", true));
-		//else wordPopup.add(getMenu("Prevents", false));
-		
-		//if (holding.canPanel(id, ContainerPanel.DESPITE) && !verb.equals("Despite")) wordPopup.add(getMenu("Despite", true));
-		if(!verb.equals("Despite")) wordPopup.add(getMenu("Despite", true));
-		else wordPopup.add(getMenu("Despite", false));
-		
-		wordPopup.addSeparator();
-		
-		//if (!displacedWord.equals("") && hasDisplacedChild()) wordPopup.add(getMenu("Self-Target", false));
-		wordPopup.add(getMenu("Self-Target", true));
-		
-		if (parent == null && (verb.equals("Prevents") || (verb.equals("Causes") && eNegated)) 
-				&& child != null && (child.verb.equals("Prevents") || (child.verb.equals("Causes") && child.eNegated))) 
-			wordPopup.add(getMenu("ReExpress", true));
-		else wordPopup.add(getMenu("ReExpress", false));
-		
-		//update();
-		//if (child != null) child.setWordMenu();
+	/**
+	 * Adds the given word to the popup either greyed or black depending
+	 * on the state of the current model.
+	 */
+	private void addWord (String word) {
+		if(!verb.equals(word)) 
+			wordPopup.add(getMenu(word, true));
+		else 
+			wordPopup.add(getMenu(word, false));
 	}
-	
-	/*public boolean hasDisplacedChild() {
-		if(child == null) return false;
-		InteractivePanel tmp = child;
-		while(tmp != null) {
-			if(!tmp.displacedWord.equals("")) return true;
-			tmp = tmp.child;
-		}
-		return false;
-	}*/
 }

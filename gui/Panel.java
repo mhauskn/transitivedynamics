@@ -2,6 +2,8 @@ package gui;
 
 import javax.swing.JPanel;
 
+import util.Util;
+
 /**
  * Generic Panel Class. Extended by ArrowPanel and Constrain Panel.
  * Indirectly extended by ConclusionPanel and InteractivePanel
@@ -79,32 +81,32 @@ public class Panel extends JPanel {
 			if (eNegated) {
 				subTCR = (!getTendency() ? "Y" : "N") + (!getConcordance() ? "Y" : "N") + 
 					(!getSubResult() ? "Y" : "N");
-				if (TCR.equals("YYY") && subTCR.equals("NNY")) verb = "Causes";
-				if ((TCR.equals("NNN") || TCR.equals("NNY"))) verb = "Helps";
-				if (TCR.equals("NYN") && subTCR.equals("YNN")) verb = "Prevents";
-				if (TCR.equals("NYN") && subTCR.equals("YNY")) verb = "Despite";
+				if (TCR.equals("YYY") && subTCR.equals("NNY")) verb = Util.CAUSES_WORD;
+				if ((TCR.equals("NNN") || TCR.equals("NNY"))) verb = Util.HELPS_WORD;
+				if (TCR.equals("NYN") && subTCR.equals("YNN")) verb = Util.PREVENTS_WORD;
+				if (TCR.equals("NYN") && subTCR.equals("YNY")) verb = Util.DESPITE_WORD;
 				
 			} else {
 				subTCR = (getTendency() ? "Y" : "N") + (!getConcordance() ? "Y" : "N") + 
 					(getSubResult() ? "Y" : "N");
-				if (TCR.equals("NYN") && subTCR.equals("NNY") || (TCR.equals("NNN") && iB == 0)) verb = "Causes";
-				if ((TCR.equals("YNY") || TCR.equals("YNN"))) verb= "Helps";
-				if (TCR.equals("YYY") && subTCR.equals("YNN")) verb = "Prevents";
-				if (TCR.equals("YYY") && subTCR.equals("YNY")) verb = "Despite";
+				if (TCR.equals("NYN") && subTCR.equals("NNY") || (TCR.equals("NNN") && iB == 0)) verb = Util.CAUSES_WORD;
+				if ((TCR.equals("YNY") || TCR.equals("YNN"))) verb= Util.HELPS_WORD;
+				if (TCR.equals("YYY") && subTCR.equals("YNN")) verb = Util.PREVENTS_WORD;
+				if (TCR.equals("YYY") && subTCR.equals("YNY")) verb = Util.DESPITE_WORD;
 			}
 			
 		} else {
 			if (eNegated) {
-				if (TCR.equals("YNN")) verb = "Causes";
-				if (TCR.equals("NYN")) verb = "Helps";
-				if (TCR.equals("NNY")) verb = "Prevents";
-				if (TCR.equals("NNN")) verb = "Causes";
+				if (TCR.equals("YNN")) verb = Util.CAUSES_WORD;
+				if (TCR.equals("NYN")) verb = Util.HELPS_WORD;
+				if (TCR.equals("NNY")) verb = Util.PREVENTS_WORD;
+				if (TCR.equals("NNN")) verb = Util.CAUSES_WORD;
 				
 			} else {
-				if (TCR.equals("NNY")) verb = "Causes";
-				if (TCR.equals("YYY")) verb = "Helps";
-				if (TCR.equals("YNN")) verb = "Prevents";
-				if (TCR.equals("YNY")) verb = "Despite";
+				if (TCR.equals("NNY")) verb = Util.CAUSES_WORD;
+				if (TCR.equals("YYY")) verb = Util.HELPS_WORD;
+				if (TCR.equals("YNN")) verb = Util.PREVENTS_WORD;
+				if (TCR.equals("YNY")) verb = Util.DESPITE_WORD;
 			}
 		}
 	}
@@ -148,6 +150,13 @@ public class Panel extends JPanel {
 		if (vec1 < 0 && vec2 < 0) return true;
 		if (vec1 == vec2) return true;
 		return false;
+	}
+	
+	/**
+	 * Gets the verb of the panel
+	 */
+	public String getVerb () {
+		return verb;
 	}
 	
 //---------------------------------------------------------------------------------------

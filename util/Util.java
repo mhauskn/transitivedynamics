@@ -26,11 +26,17 @@ public class Util {
 	public static final int INVALID		= 5;
 	
 	public static final String CAUSES_WORD 		= "Causes";
-	public static final String PREVENTS_WORD 	= "Prevent";
+	public static final String PREVENTS_WORD 	= "Prevents";
 	public static final String HELPS_WORD 		= "Helps";
 	public static final String DESPITE_WORD 	= "Despite";
 	public static final String ALLOWS_WORD 		= "Allows";
 	public static final String INVALID_WORD 	= "Invalid";
+	
+	public static final String[] WORDS = new String[] { CAUSES_WORD, PREVENTS_WORD,
+		HELPS_WORD, DESPITE_WORD, ALLOWS_WORD, INVALID_WORD};
+	
+	public static final int[] WORD_NUMS = new int[] { CAUSES, PREVENTS, HELPS,
+		DESPITE, ALLOWS, INVALID };
 	
 	/**
 	 * Defines colors which are used to represent the different
