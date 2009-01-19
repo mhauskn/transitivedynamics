@@ -150,44 +150,48 @@ public class ArrowPanel extends Panel {
 		
 		drawVectors(g2d);
 				
-			// Center Dot
-			g2d.setColor(COL_FG);
-			g2d.fillOval(start.x - 3, start.y - 3, 6, 6);
-			
-			// Verb
-			String toDraw = "Invalid";
-			String deepVerb = "Invalid";
-			if (!parentInvalid && !verb.equals("Invalid")) {
-				if(verb.equals("Despite")) {
-					toDraw = (eNegated ? String.valueOf(NEG_CHAR) : "") + bWord + " ";
-					toDraw += verb + " ";
-					toDraw += (aNegated ? String.valueOf(NEG_CHAR) : "") + aWord;
-				} else {
-					toDraw  = (aNegated ? String.valueOf(NEG_CHAR) : "") + aWord + " ";
-					toDraw += verb + " ";
-					toDraw += (eNegated ? String.valueOf(NEG_CHAR) : "") + bWord;
-				}	
-			}
-			
-			if (!getDeepVerb().equals("Invalid")) {
-				if(getDeepVerb().equals("Despite")) {
-					deepVerb = bWord + " " + getDeepVerb() + " " + aWord;
-				} else {
-					deepVerb = aWord + " " + getDeepVerb() + " " + bWord;
-				}
-			}			
-			
-			// Show the TCR if needed
-			if (holding.isTCR()) {
-				g2d.drawString(deepVerb, 10, (getHeight() / 2) - 2); //Draws deep verb
-				g2d.drawString(toDraw, 95, (getHeight() / 2) - 2);
-				
-				g2d.setFont(fontSmall);
-				drawTCR(g2d);
+		// Center Dot
+		g2d.setColor(COL_FG);
+		g2d.fillOval(start.x - 3, start.y - 3, 6, 6);
+		
+		// Verb
+		String toDraw = "Invalid";
+		String deepVerb = "Invalid";
+		if (!parentInvalid && !verb.equals("Invalid")) {
+			if(verb.equals("Despite")) {
+				toDraw = (eNegated ? String.valueOf(NEG_CHAR) : "") + bWord + " ";
+				toDraw += verb + " ";
+				toDraw += (aNegated ? String.valueOf(NEG_CHAR) : "") + aWord;
 			} else {
-				g2d.drawString(toDraw, 10, (getHeight() / 2) + 5);
+				toDraw  = (aNegated ? String.valueOf(NEG_CHAR) : "") + aWord + " ";
+				toDraw += verb + " ";
+				toDraw += (eNegated ? String.valueOf(NEG_CHAR) : "") + bWord;
+			}	
+		}
+		
+		if (!getDeepVerb().equals("Invalid")) {
+			if(getDeepVerb().equals("Despite")) {
+				deepVerb = bWord + " " + getDeepVerb() + " " + aWord;
+			} else {
+				deepVerb = aWord + " " + getDeepVerb() + " " + bWord;
 			}
+		}			
+		
+		// Show the TCR if needed
+		if (holding.isTCR()) {
+			g2d.drawString(deepVerb, 10, (getHeight() / 2) - 2); //Draws deep verb
+			g2d.drawString(toDraw, 95, (getHeight() / 2) - 2);
+			
+			g2d.setFont(fontSmall);
+			drawTCR(g2d);
+		} else {
+			g2d.drawString(toDraw, 10, (getHeight() / 2) + 5);
+		}
+		
+		postPaint(g2d);
 	}
+	
+	public void postPaint (Graphics2D g) {}
 	
 	/**
 	 * Returns a string representation of the current object. 
