@@ -62,21 +62,6 @@ public class ArrowPanel extends Panel {
 	protected boolean rBLocked;
 	
 	/**
-	 * True if the E vector is currently locked down
-	 */
-	protected boolean rELocked;
-	
-	/**
-	 * True if the negated-A vector is currently locked down
-	 */
-	protected boolean rNALocked;
-	
-	/**
-	 * True if the negated-E vector is currently locked down
-	 */
-	protected boolean rNELocked;
-	
-	/**
 	 * The font used to draw letters
 	 */
 	protected Font fontSmall;
@@ -122,7 +107,7 @@ public class ArrowPanel extends Panel {
 		rNE = new Rectangle();
 		
 		// Nothing locked to start with
-		rALocked = rBLocked = rELocked = rNALocked = rNELocked = false;
+		rALocked = rBLocked = false;
 		
 		offset = 50;
 				

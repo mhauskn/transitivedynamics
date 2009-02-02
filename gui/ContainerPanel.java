@@ -4,10 +4,8 @@ import io.ModelIO;
 
 import java.awt.Color;
 import java.awt.GridLayout;
-//import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 import util.Util;
 
@@ -186,7 +184,6 @@ public class ContainerPanel extends JPanel {
 		for(int i=0; i<panels.length; i++) {
 			InteractivePanel tmp = panels[i];
 		
-			//tmp.updateValues(); //TODO: This is experimental and maybe bad!
 			tmp.setA(getBestA(tmp));
 			tmp.setB(getBestB(tmp));
 			lockNeededVecs(tmp);
@@ -264,68 +261,159 @@ public class ContainerPanel extends JPanel {
 		reDrawModel();
 	}
 	
-	public Hashtable<String,panelConfig> explorePanelPossibilities (int panelNum) {
-		Hashtable<String,panelConfig> configs = new Hashtable<String,panelConfig>();
+	public void setPanel (int panelNum, String desiredReln) {
+		String[] verbs = new String[panels.length];
+		for (int i = 0; i < panels.length; i++) {
+			if (i == panelNum)
+				verbs[i] = desiredReln;
+			else
+				verbs[i] = panels[i].verb;
+		}
+		setPanels(verbs);
+	}
+	
+	/**
+	 * Sets our model to the given verbs. This is what makes the model 
+	 * click-changable. 
+	 * 
+	 * 1. Set correct verbs
+	 * 2. Lock needed vectors
+	 * 3. Create hierarchy of variable vectors
+	 * 4. Vary vectors and check if the model is consistent
+	 * 5. Expand the correct configuration outwards
+	 */
+	public void setPanels (String[] verbs) {
+		if (verbs.length != panels.length)
+			return;
+		
+		int initE = panels[0].iE;
+		
 		updateLast();
 		
-		InteractivePanel panel = panels[panelNum];
+		// Setup the correct verbs
+		for (int i = 0; i < panels.length; i++)
+			panels[i].verb = verbs[i];
 		
-		varyPanel(panel, configs);
-		panel.iE *= -1;
-		varyPanel(panel, configs);
+		// Lock the needed vectors
+		for (int i = 0; i < panels.length; i++)
+			lockNeededVecs(panels[i]);
 		
-		restoreLast();
-		return configs;
+		// Create Vector hierarchy
+		int max_var = panels.length+1;
+		ArrayList<Vector> vecs = new ArrayList<Vector>();
+		for (InteractivePanel p : panels) {
+			vecs.add(new Vector(p,Panel.eVEC,max_var));
+			if (!p.rALocked)
+				vecs.add(new Vector(p,Panel.aVEC,max_var));
+			if (!p.rBLocked)
+				vecs.add(new Vector(p,Panel.bVEC,max_var));
+		}
+		
+		// Vary and check consistency
+		int vec = vecs.size()-1;
+		while (!consistent(verbs) && vec >= 0) {
+			boolean upgrade_necessary = vecs.get(vec).vary();
+			if (upgrade_necessary)
+				vec -= 1;
+			else
+				vec = vecs.size()-1;
+		}
+		
+		// Expand our configuration outwards
+		double multiplier = initE / (double) panels[0].iE;
+		for (Panel p : panels) {
+			p.iE = (int) Math.round(multiplier * p.iE);
+			p.iA = (int) Math.round(multiplier * p.iA);
+			p.iB = (int) Math.round(multiplier * p.iB);
+		}
 	}
 	
 	/**
-	 * Varies the vectors inside of the given panel
-	 * @param panel
+	 * Updates the model and checks to make sure that 
+	 * each panel indeed has the desired verb. If so,
+	 * return true. Else false;
 	 */
-	void varyPanel (InteractivePanel panel, Hashtable<String,panelConfig> relns) {
-		int increment = panel.iE > 0 ? -1 : 1;
-		int max_variance = panel.iE * -1;
+	boolean consistent (String[] verbs) {
+		updateInsideOut();
+		for (int i = 0; i < panels.length; i++) {
+			panels[i].updateValues();
+			if (!panels[i].verb.equals(verbs[i]))
+				return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * The vector class is a wrapper for a single vector element 
+	 * such as iA,iB, or iE. It has a reference to its parent 
+	 * vector and a string to identify which field to manipulate.
+	 * It also know something of how to vary the vectors. 
+	 *
+	 */
+	class Vector { 
+		/**
+		 * The maximum variance allowed. At a mininum this should be equal
+		 * to the number of panels in the model.
+		 */
+		int MAX_VAR = 3;
 		
-		for (int amag = panel.iE; amag != max_variance; amag += increment) {
-			for (int bmag = panel.iE; bmag != max_variance; bmag += increment) {
-				panel.setA(amag);
-				panel.setB(bmag);
-				panel.updateValues();
-				if (consistent())
-					if (!relns.containsKey(panel.getVerb()))
-							relns.put(panel.getVerb(), new panelConfig(panel));
+		Panel p;
+		String field;
+		int curr_mag;
+		
+		public Vector (Panel panel, String _field, int max_var) {
+			MAX_VAR = max_var;
+			p = panel;
+			field = _field;
+			curr_mag = MAX_VAR;
+			updatePanel();
+		}
+		
+		/**
+		 * Varies the vector within the maximum variance. 
+		 * returns true when we need to upgrade and false
+		 * otherwise.
+		 */
+		public boolean vary () {
+			if (field.equals(Panel.eVEC))
+				return varyE();
+			curr_mag -= 1;
+			if (curr_mag == 0) //Excluding zero makes the expansion easier
+				curr_mag -= 1;
+			updatePanel();
+			if (curr_mag == MAX_VAR)
+				return true;
+			if (curr_mag == -MAX_VAR)
+				curr_mag = MAX_VAR+1;	
+			return false;
+		}
+		
+		/**
+		 * A special method to vary our E vector:
+		 * It only needs to be varied at MAX_VAR 
+		 * and -MAX_VAR
+		 */
+		boolean varyE () {
+			curr_mag *= -1;
+			updatePanel();
+			if (curr_mag == MAX_VAR) {
+				return true;
+			} else {
+				return false;
 			}
 		}
-	}
-	
-	class panelConfig {
-		int iA; int iB; int iR; int iE; String verb;
 		
-		public panelConfig (Panel p) {
-			iA = p.iA;
-			iB = p.iB;
-			iR = p.iR;
-			iE = p.iE;
-			verb = p.verb;
+		/**
+		 * Pushes our current magnitude onto the actual panel
+		 */
+		void updatePanel () {
+			if (field.equals(Panel.aVEC))
+				p.iA = curr_mag;
+			if (field.equals(Panel.bVEC))
+				p.iB = curr_mag;
+			if (field.equals(Panel.eVEC))
+				p.iE = curr_mag;
 		}
-		
-		void restore (Panel p) {
-			p.iA = iA;
-			p.iB = iB;
-			p.iR = iR;
-			p.iE = iE;
-			p.verb = verb;
-		}
-	}
-	
-	/**
-	 * Sets the specified panel to the specified relation.
-	 */
-	public void setPanel (int panelNum, String desiredReln, Hashtable<String,panelConfig> ht) {
-		if (!ht.containsKey(desiredReln))
-			return;
-		ht.get(desiredReln).restore(panels[panelNum]);
-		update();
 	}
 	
 	/**
@@ -555,6 +643,59 @@ public class ContainerPanel extends JPanel {
 				i.rALocked = true; i.rBLocked = false;
 			}
 		}
+	}
+	
+	/**
+	 * Updates the locked vectors in a given panel. This assumes
+	 * that the correct locked vectors have already been established
+	 * and that the parent and child's iR vectors have already been 
+	 * put in the correct places.
+	 */
+	void updateLocked (InteractivePanel i) {
+		if (i.rALocked)
+			i.iA = i.parent.iR;
+		if (i.rBLocked)
+			i.iB = i.child.iR;
+	}
+	
+	/**
+	 * Updates safely: starts updating only at vectors
+	 * with no locks. Slowly works its way out toward vectors 
+	 * which have locks.
+	 * 
+	 * Vectors must be correctly locked before this is called!
+	 */
+	void updateInsideOut () {
+		ArrayList<InteractivePanel> safe_list = new ArrayList<InteractivePanel>();
+		ArrayList<InteractivePanel> unsafe_list = new ArrayList<InteractivePanel>();
+		
+		for (InteractivePanel p : panels)
+			unsafe_list.add(p);
+		
+		while (unsafe_list.size() > 0) {
+			for (int i = 0; i < unsafe_list.size(); i++) {
+				InteractivePanel p = unsafe_list.get(i);
+				if (!p.rALocked && !p.rBLocked) { //Panel is inherently update safe
+					updateTransfer(p,safe_list,unsafe_list);
+				} else if (p.rALocked && safe_list.contains(p.parent)) {
+					updateTransfer(p,safe_list,unsafe_list);
+				} else if (p.rBLocked && safe_list.contains(p.child)) {
+					updateTransfer(p,safe_list,unsafe_list);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Updates and transfer a panel from the unsafe list to the safe list.
+	 * Used only in the context of the above method.
+	 */
+	void updateTransfer (InteractivePanel p, ArrayList<InteractivePanel> safe,
+			ArrayList<InteractivePanel> unsafe) {
+		updateLocked(p);
+		p.updateR();
+		safe.add(p);
+		unsafe.remove(p);
 	}
 	
 	/**

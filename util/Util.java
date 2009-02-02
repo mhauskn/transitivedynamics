@@ -29,11 +29,11 @@ public class Util {
 	public static final String PREVENTS_WORD 	= "Prevents";
 	public static final String HELPS_WORD 		= "Helps";
 	public static final String DESPITE_WORD 	= "Despite";
-	public static final String ALLOWS_WORD 		= "Allows";
+	//public static final String ALLOWS_WORD 		= "Allows"; //Removed by request of el jefe
 	public static final String INVALID_WORD 	= "Invalid";
 	
 	public static final String[] WORDS = new String[] { CAUSES_WORD, PREVENTS_WORD,
-		HELPS_WORD, DESPITE_WORD, ALLOWS_WORD, INVALID_WORD};
+		HELPS_WORD, DESPITE_WORD, INVALID_WORD};
 	
 	public static final int[] WORD_NUMS = new int[] { CAUSES, PREVENTS, HELPS,
 		DESPITE, ALLOWS, INVALID };
@@ -122,10 +122,7 @@ public class Util {
 			
 		} else if (verb.equals(DESPITE_WORD)) {
 			return DESPITE;
-			
-		} else if (verb.equals(ALLOWS_WORD)) {
-			return ALLOWS;
-		}
+		} 
 		return INVALID;
 	}
 		

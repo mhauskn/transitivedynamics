@@ -14,6 +14,10 @@ public class Panel extends JPanel {
 	private static final long serialVersionUID = -6859995267102467064L;
 	protected static final char NEG_CHAR = '\u00AC';
 	
+	public static final String eVEC = "iE";
+	public static final String aVEC = "iA";
+	public static final String bVEC = "iB";
+	
 	/**
 	 * The container panel that is holding this object.
 	 */
@@ -68,7 +72,7 @@ public class Panel extends JPanel {
 		
 		rWord = getRWord();
 		
-		iR = getR();
+		updateR();
 		
 		// Calculate tendency, concordance, and result
 		TCR = (getTendency() ? "Y" : "N") + (getConcordance() ? "Y" : "N") + (getResult() ? "Y" : "N");
@@ -109,6 +113,13 @@ public class Panel extends JPanel {
 				if (TCR.equals("YNY")) verb = Util.DESPITE_WORD;
 			}
 		}
+	}
+	
+	/**
+	 * Updates the resultant vector.
+	 */
+	public void updateR () {
+		iR = getR();
 	}
 	
 	/**

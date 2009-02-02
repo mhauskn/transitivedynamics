@@ -25,7 +25,7 @@ public class TransativeWindow implements ActionListener, ItemListener {
 	/**
 	 * The version of the current application.
 	 */
-	public static final String APP_VER = " 7.5.6";
+	public static final String APP_VER = " 7.6.0";
 	
 	/**
 	 * Strings for the Menu Names

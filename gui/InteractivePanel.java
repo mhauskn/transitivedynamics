@@ -1,11 +1,7 @@
 package gui;
 
-import gui.ContainerPanel.panelConfig;
-
 import java.awt.Font;
 import java.awt.event.*;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 import javax.swing.*;
 
@@ -124,9 +120,7 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
 	public ConstrainPanel myConstrainAbove;
 	
 	public ConstrainPanel myConstrainBelow;
-	
-	public Hashtable<String, panelConfig> possible_configs;
-	
+		
 	
 	
 //---------------------------------------------------------------------------------------
@@ -304,17 +298,17 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
 		if (event.getButton() == MouseEvent.BUTTON1) {
 			
 			// If they clicked on the negative E button
-			if (rNE.contains(event.getPoint()) && !rNELocked)	{
+			if (rNE.contains(event.getPoint()))	{
 				mouseButton = MOUSE_NE;
 			}
 			
 			// If they clicked on the negative A button
-			if (rNA.contains(event.getPoint()) && !rNALocked)	{
+			if (rNA.contains(event.getPoint()))	{
 				mouseButton = MOUSE_NA;
 			}
 			
 			// If they clicked on the E button
-			if (rE.contains(event.getPoint()) && !rELocked) {
+			if (rE.contains(event.getPoint())) {
 				mouseButton = MOUSE_E;
 				mouseOffset = event.getX() - (start.x + getE());
 			}
@@ -372,7 +366,7 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
         
         for (String reln : Util.WORDS)
         	if (source.equals(reln))
-        		holding.setPanel(id, reln, possible_configs);
+        		holding.setPanel(id, reln);
         
         if (source.equals("Negate")) {
         	if (mouseButton == MOUSE_A) {
@@ -474,13 +468,8 @@ public class InteractivePanel extends ArrowPanel implements MouseMotionListener,
 	 */
 	public void setWordMenu() {
 		wordPopup.removeAll();
-		//for (String reln : Util.WORDS)
-		//	addWord(reln);
-		
-		possible_configs = holding.explorePanelPossibilities(id);
-		Enumeration<String> e = possible_configs.keys();
-		while (e.hasMoreElements())
-			addWord(e.nextElement());
+		for (String reln : Util.WORDS)
+			addWord(reln);
 		
 		wordPopup.addSeparator();
 		
