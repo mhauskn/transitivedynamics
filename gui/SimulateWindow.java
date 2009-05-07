@@ -11,6 +11,11 @@ import javax.swing.*;
 public class SimulateWindow extends JFrame implements ActionListener {
 	
 	private static final long serialVersionUID = 8986946014398992725L;
+	
+	static final String continue_cmd = "continue";
+	static final String cancel_cmd = "cancel";
+	static final String output_cmd = "output";
+	static final String normalize_cmd = "normalize";
 		
 	ContainerPanel cPanel;
 	ExploreWindow exWin;
@@ -18,8 +23,19 @@ public class SimulateWindow extends JFrame implements ActionListener {
 	JScrollPane areaScrollPane;
 	JPanel setupPanel;
 	//JPanel resultPanel;
-	JTextField txtPatients;
+	JTextField txtPatients, ztxt;
 	JTextArea txtResults;
+	
+	/**
+	 * Specifies if the individual patient vectors should be included 
+	 * in output
+	 */
+	private boolean outputMagnitudes = false;
+	
+	/**
+	 * Draws new vectors from a normal distribution
+	 */
+	private boolean useNormalDist = false;
 	
 	
 	public SimulateWindow(int x, int y, ContainerPanel cp, ExploreWindow ex) {
@@ -35,7 +51,7 @@ public class SimulateWindow extends JFrame implements ActionListener {
 	 * Sets up and initializes the window.
 	 */
 	private void initializeGUI(int x, int y) {
-		setSize(500, 250);
+		setSize(500, 330);
 		setLocation(x, y);
 		
 		setBackground(Color.gray);
@@ -67,15 +83,40 @@ public class SimulateWindow extends JFrame implements ActionListener {
         a_layout.putConstraint(SpringLayout.NORTH, txtPatients, 5, SpringLayout.NORTH, setupPanel_A);
         
         JButton btnOK = new JButton("Continue");
+        btnOK.setActionCommand(continue_cmd);
         JButton btnCancel = new JButton("Cancel");
+        btnCancel.setActionCommand(cancel_cmd);
+        
+        JCheckBox chkOutput = new JCheckBox("Output Individual Responses");
+        chkOutput.setActionCommand(output_cmd);
+        JCheckBox normalDist = new JCheckBox("Sample from Normal Distribution");
+        normalDist.setActionCommand(normalize_cmd);
+        
+        chkOutput.addActionListener(this);
+        normalDist.addActionListener(this);
         btnOK.addActionListener(this);
         btnCancel.addActionListener(this);
         
+        JLabel zscore = new JLabel("Endpoint Z-Score:");
+        ztxt = new JTextField("3.0", 3);
+        ztxt.setEnabled(false);
+        
+        setupPanel_A.add(chkOutput);
+        setupPanel_A.add(normalDist);
+        setupPanel_A.add(zscore);
+        setupPanel_A.add(ztxt);
         setupPanel_A.add(btnOK);
         setupPanel_A.add(btnCancel);
         
-        a_layout.putConstraint(SpringLayout.NORTH, btnOK, 10, SpringLayout.SOUTH, txtPatients);
-        a_layout.putConstraint(SpringLayout.NORTH, btnCancel, 10, SpringLayout.SOUTH, txtPatients);
+        a_layout.putConstraint(SpringLayout.NORTH, chkOutput, 1, SpringLayout.SOUTH, txtPatients);
+        a_layout.putConstraint(SpringLayout.NORTH, normalDist, 1, SpringLayout.SOUTH, chkOutput);
+        a_layout.putConstraint(SpringLayout.NORTH, zscore, 1, SpringLayout.SOUTH, normalDist);
+        a_layout.putConstraint(SpringLayout.WEST, zscore, 5, SpringLayout.WEST, setupPanel_A);
+        a_layout.putConstraint(SpringLayout.NORTH, ztxt, 1, SpringLayout.SOUTH, normalDist);
+        a_layout.putConstraint(SpringLayout.WEST, ztxt, 5, SpringLayout.EAST, zscore);
+
+        a_layout.putConstraint(SpringLayout.NORTH, btnOK, 10, SpringLayout.SOUTH, ztxt);
+        a_layout.putConstraint(SpringLayout.NORTH, btnCancel, 10, SpringLayout.SOUTH, ztxt);
         a_layout.putConstraint(SpringLayout.WEST, btnCancel, 5, SpringLayout.EAST, btnOK);
         
         setupPanel.add(setupPanel_A);
@@ -105,21 +146,17 @@ public class SimulateWindow extends JFrame implements ActionListener {
 
 
 	public void actionPerformed(ActionEvent e) {
-		String txt = ((JButton)e.getSource()).getText();
+		String txt = e.getActionCommand();
 		
-		if (txt.equals("Continue")) {
+		if (txt.equals(continue_cmd)) {
 			int patients = Integer.parseInt(txtPatients.getText());
+			double zscore = Math.abs(Double.parseDouble(ztxt.getText()));
+			if (!useNormalDist) zscore = -1;
 			
-			if (patients <= 0) {
+			if (patients <= 0 || zscore == 0) {
 				txtResults.setText("ERROR: Invalid number of participants.");
 				return;
 			}
-			
-			/*areaScrollPane.setViewportView(resultPanel);
-			areaScrollPane.setBorder(
-		            BorderFactory.createCompoundBorder(
-		            		BorderFactory.createTitledBorder("Simulation Results"),
-		                    BorderFactory.createEmptyBorder(2,2,2,2)));*/
 			
 			String outputHeader = "--------------------\n";
 			outputHeader += "Simulation Date: " + (DateFormat.getDateInstance(DateFormat.LONG)).format(new Date()) + "\n";
@@ -128,9 +165,10 @@ public class SimulateWindow extends JFrame implements ActionListener {
 			
 			exWin.txtBox.append(outputHeader);
 			
-			String outputText = runSimulation(patients);
+			String outputText = runSimulation(patients, zscore);
 			
-			exWin.txtBox.append(outputText);
+			if (outputMagnitudes)
+				exWin.txtBox.append(outputText);
 			
 			txtResults.setText(outputText);
 			txtResults.setCaretPosition(0);
@@ -144,15 +182,20 @@ public class SimulateWindow extends JFrame implements ActionListener {
 			txtPatients.setText("30");
 			setVisible(false);
 			
-		} else if (txt.equals("Cancel")) {
+		} else if (txt.equals(cancel_cmd)) {
 			txtPatients.setText("30");
 			setVisible(false);
+		} else if (txt.equals(output_cmd)) {
+			outputMagnitudes = !outputMagnitudes;
+		} else if (txt.equals(normalize_cmd)) {
+			useNormalDist = !useNormalDist;
+			ztxt.setEnabled(useNormalDist);
 		}
 	}
 	
-	private String runSimulation(int patients) 
+	private String runSimulation(int patients, double zscore) 
 	{
 		Simulator s = new Simulator(cPanel, exWin);
-		return s.simulate(patients);
+		return s.simulate(patients, zscore);
 	}
 }

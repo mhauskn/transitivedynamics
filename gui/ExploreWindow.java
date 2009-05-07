@@ -166,6 +166,10 @@ public class ExploreWindow extends JFrame implements ActionListener {
 		}
 	}
 	
+	public void updateSim (int numFound, int total) {
+		setTitle("Simulator Running ... [" + numFound + "/" + total + "]");
+	}
+	
 	/**
 	 * Updates the time remaining during the course of the explore
 	 * @param perc Percentage complete

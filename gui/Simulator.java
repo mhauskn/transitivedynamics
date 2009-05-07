@@ -43,6 +43,18 @@ public class Simulator {
 	private ExploreWindow expWin;
 	
 	/**
+	 * Used for generating numbers from the normal distribution
+	 */
+	Random ran = new Random();
+	
+	/**
+	 * If zscore == -1 then we do not wish to use
+	 * a normal distribution. Otherwise, we should employ
+	 * a normal distribution with the specified zscore.
+	 */
+	double zscore;
+	
+	/**
 	 * Holds the vectors of our accepted configurations
 	 */
 	ArrayList<Integer[][]> acceptedConf = new ArrayList<Integer[][]>();
@@ -59,8 +71,9 @@ public class Simulator {
 		initLocked = new boolean[2][cntPanels];
 	}
 	
-	public String simulate(int numPatients)
+	public String simulate(int numPatients, double _zscore)
 	{
+		zscore = _zscore;
 		timeStart = System.currentTimeMillis();
 		String premise = "";
 		String overallAffector = cPanel.conclusion.getAWord();
@@ -208,6 +221,7 @@ public class Simulator {
 				}
 				retval += "\n";
 				totalAccepted++;
+				expWin.updateSim(totalAccepted, numPatients);
 			}
 		}
 		
@@ -264,6 +278,9 @@ public class Simulator {
 	}
 
 	private int getRandom(int a, int b) {
+		if (zscore > 0)
+			return getNormalDistributedPoint(a,b);
+		
 		Random rnd = new Random();
 		int retval = 0;
 		
@@ -293,5 +310,27 @@ public class Simulator {
 		}
 		
 		return retval;
+	}
+	
+	/**
+	 * Uses the NextGaussian method in Java.util.Random to provide
+	 * data from a normal distribution. This data is then scaled and 
+	 * mapped onto the correct range.
+	 */
+	private int getNormalDistributedPoint (int low, int high) {
+		double value;
+		
+		while (true) {
+			value = ran.nextGaussian();
+			if (value < zscore && value > -zscore)
+				break;
+		}
+		
+		double width = 2 * zscore;
+		double scale = (high - low) / width;
+		double midpoint = (high + low) / (double) 2;
+		
+		double scaledValue = value * scale + midpoint;
+		return (int) Math.round(scaledValue);
 	}
 }
